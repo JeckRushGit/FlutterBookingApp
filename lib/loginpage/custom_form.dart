@@ -9,9 +9,11 @@ class CustomForm extends StatefulWidget {
   Icon? icon;
   Color textFieldColor;
   bool obscure;
+  TextEditingController? controller;
 
   CustomForm(
       {Key? key,
+        this.controller,
       required this.label,
       required this.hint,
       this.inputType,
@@ -27,10 +29,17 @@ class CustomForm extends StatefulWidget {
 class _CustomFormState extends State<CustomForm> {
   String? font = GoogleFonts.montserrat().fontFamily;
 
+
+  @override
+  void dispose(){
+    widget.controller!.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextField(
-
+      controller: widget.controller,
       obscureText: widget.obscure,
       style: TextStyle(color: widget.textFieldColor,fontFamily: font),
       keyboardType: widget.inputType,
