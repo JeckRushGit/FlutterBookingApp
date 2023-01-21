@@ -15,6 +15,7 @@ class CustomText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
+      overflow: TextOverflow.ellipsis, //da aggiungere come parametro quando mettiamo assieme i codici
       textAlign: align,
       style: GoogleFonts.montserrat(fontWeight: weight,fontSize: size,color: color),
     );

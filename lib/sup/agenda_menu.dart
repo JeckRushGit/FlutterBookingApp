@@ -12,44 +12,42 @@ class _AgendaMenuState extends State<AgendaMenu> {
   late String value;
 
   _AgendaMenuState() {
-    items = ['to do', 'checked', 'canceled'];
+    items = ['To Do', 'Checked', 'Canceled'];
     value = items[0];
   }
 
 
-  /*DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+  DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
     value: item,
     child: Text(
       item,
       style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 23,
+          fontSize: 14,
           color: Color.fromARGB(255, 240, 246, 255)),
     ),
   );
 
-  DropdownButton<String>(
-  value: value,
-  iconSize: 30,
-  dropdownColor: Color.fromARGB(255, 41, 50, 65),
-  iconEnabledColor: Color.fromARGB(255, 255, 255, 255),
-  borderRadius: BorderRadius.circular(16),
-  items: items.map(buildMenuItem).toList(),
-  onChanged: (value) => setState(() => this.value = value!),
-  ),*/
-
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-          body: Container(
-            //padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 41, 50, 65),
-              border: Border.all(color: Colors.black, width: 3),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: null,
-          ));
+    return  Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              height: 28,
+              decoration: BoxDecoration(
+                            color: Color.fromARGB(255, 41, 50, 65),
+                            //border: Border.all(color: Colors.black, width: 3),
+                            borderRadius: BorderRadius.circular(24),
+              ),
+              child: DropdownButton<String>(
+                      underline: const SizedBox(),
+                      value: value,
+                      iconSize: 20,
+                      dropdownColor: Color.fromARGB(255, 41, 50, 65),
+                      iconEnabledColor: Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: BorderRadius.circular(16),
+                      items: items.map(buildMenuItem).toList(),
+                      onChanged: (value) => setState(() => this.value = value!),
+              ),
+    );
   }
 }

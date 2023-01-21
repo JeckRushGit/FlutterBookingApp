@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:progetto_ium/sup/agenda_menu.dart';
 import 'package:progetto_ium/sup/custom_text.dart';
 import 'package:progetto_ium/sup/list_elem.dart';
-import 'navbar/custom_navbar.dart';
+import '../navbar/custom_navbar.dart';
 
 
 class AgendaPage extends StatefulWidget {
@@ -49,23 +49,22 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
                     ),),
                 ),
                 const Spacer(flex: 3),
-                //Da fare: è ancora da mettere il menu tendina
-                //AgendaMenu(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+                  child: AgendaMenu(),
+                ),
                 const Spacer(flex: 1),
-
-
-
-
               ],
             ),
             Center(
               child: Column(
                 children: [
                       for(int i=0; i< _arrayGiorniLezioni.length ;i++)
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: ListElem(),
-                      ),
+                        //if(_arrayGiorniLezioniNextW.isNotEmpty)
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: ListElem(),
+                          ),
                 ],
               ),
             ),
@@ -84,10 +83,11 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               child: Column(
                 children: [
                   for(int i=0; i< _arrayGiorniLezioniNextW.length ;i++)
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                      child: ListElem(),
-                    ),
+                    //if(_arrayGiorniLezioniNextW.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                        child: ListElem(),
+                      ),
                 ],
               ),
             ),

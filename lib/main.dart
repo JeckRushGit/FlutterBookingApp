@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:progetto_ium/agenda_page.dart';
+import 'package:progetto_ium/pages/agenda_page.dart';
+import 'package:progetto_ium/pages/profile_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +19,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: AgendaPage(),
+      //home: ProfilePage(),
     );
     /*GetMaterialApp(
       debugShowCheckedModeBanner: false,
