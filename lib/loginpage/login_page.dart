@@ -1,10 +1,11 @@
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:progetto_ium/paginaesempio.dart';
+import 'package:progetto_ium/calendarpage/calendar_page.dart';
+import 'package:progetto_ium/calendarpage/calendarpageguest.dart';
+import 'package:progetto_ium/homepage.dart';
+import 'package:progetto_ium/startingday.dart';
 
 import '../colors/hexcolor.dart';
 import '../custom_text.dart';
@@ -20,29 +21,32 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
 
-
-
-  Future<void> Foo(String email,String password) async{
-
-
-
-    final response = await http.post(Uri.parse("http://192.168.1.146:8081/backendeweb_war_exploded/ServletLogin"),body: {'email': email,'password': password});
-    if(response.statusCode == 200){
-      final token = response.body;
-      await storage.write(key: 'jwt', value: token);
-      Get.to(PaginaEsempio());
+  Future<bool> Foo(String email, String password) async {
+    try {
+      var response = await http.post(
+          Uri.parse("http://192.168.1.37:8082/tweb2_0_war_exploded/ServletLogin"),
+          body: {
+            'email': email,
+            'password': password
+          }).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final token = response.body;
+        await storage.write(key: 'jwt', value: token);
+        return true;
+      } else if (response.statusCode == 401) {
+        print("Wrong password");
+      } else if (response.statusCode == 404) {
+        print("User not found");
+      } else {
+        print("Something went wrong");
+      }
+      return false;
+    } catch (e) {
+      print("Qualcosa è andato storto con il server: $e");
     }
-    else if(response.statusCode == 401){
-      print("Wrong password");
-    }
-    else if(response.statusCode == 404){
-      print("User not found");
-    }
-    else{
-      print("Something went wrong");
-    }
+    return false;
   }
 
   @override
@@ -78,9 +82,9 @@ class _LoginPageState extends State<LoginPage> {
                     label: "Email",
                     hint: "e.g. john@gmail.com",
                     inputType: TextInputType.emailAddress,
-                    icon: Icon(Iconsax.sms, color: Colors.white)),
+                    icon: const Icon(Iconsax.sms, color: Colors.white)),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Padding(
                   padding: const EdgeInsets.only(left: 15, right: 15),
                   child: CustomForm(
@@ -89,11 +93,11 @@ class _LoginPageState extends State<LoginPage> {
                       label: "Password",
                       hint: "",
                       inputType: TextInputType.visiblePassword,
-                      icon: Icon(
+                      icon: const Icon(
                         Iconsax.lock,
                         color: Colors.white,
                       ))),
-              Spacer(
+              const Spacer(
                 flex: 2,
               ),
               MaterialButton(
@@ -101,9 +105,17 @@ class _LoginPageState extends State<LoginPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
                 color: Colors.white,
-                padding: EdgeInsets.all(13),
-                onPressed: () {
-                  Foo(emailController.text,passwordController.text);
+                padding: const EdgeInsets.all(13),
+                onPressed: () async {
+                  bool res =
+                      await Foo(emailController.text, passwordController.text);
+                  if (res) {
+                    if (!mounted) return;
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => HomePage()));
+                  } else {
+                    print("falso");
+                  }
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -112,7 +124,34 @@ class _LoginPageState extends State<LoginPage> {
                         text: "Login",
                         color: HexColor.fromHex("#3D5A80"),
                         weight: FontWeight.w700),
-                    SizedBox(width: 20),
+                    const SizedBox(width: 20),
+                    Icon(
+                      Iconsax.login,
+                      color: HexColor.fromHex("#3D5A80"),
+                    )
+                  ],
+                ),
+              ),
+              const Spacer(flex: 1),
+              MaterialButton(
+                elevation: 7.5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                color: Colors.white,
+                padding: const EdgeInsets.all(13),
+                onPressed: () {
+                  if (!mounted) return;
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const CalendarPageGuest()));
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomText(
+                        text: "Guest login",
+                        color: HexColor.fromHex("#3D5A80"),
+                        weight: FontWeight.w700),
+                    const SizedBox(width: 20),
                     Icon(
                       Iconsax.login,
                       color: HexColor.fromHex("#3D5A80"),
