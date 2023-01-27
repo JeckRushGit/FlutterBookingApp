@@ -1,7 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../sup/custom_text.dart';
+import '../custom_text.dart';
 
 class CustomNavBar extends StatefulWidget {
   final Color barColor;
