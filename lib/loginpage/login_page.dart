@@ -38,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       } else if (response.statusCode == 401) {
         print("Wrong password");
       } else if (response.statusCode == 404) {
+        //Da fare: cambiare statusCode, non possiamo usare 404
         print("User not found");
       } else {
         print("Something went wrong");

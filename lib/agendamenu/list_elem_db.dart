@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -5,11 +6,13 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:progetto_ium/modules/course.dart';
 
-
 import '../custom_text.dart';
 import 'agendapage.dart';
 import 'button_for_slidable.dart';
 import 'button_for_the_slidable.dart';
+
+import 'package:http/http.dart' as http;
+import '../startingday.dart';
 
 
 class ListElemDb extends StatefulWidget {
@@ -40,9 +43,16 @@ class _ListElemDbState extends State<ListElemDb> {
 
 
   callbackData(_arrayLezione ){
-    setState(() {
-      this._arrayLezione=_arrayLezione;
-    });
+    //da fare non può chiamare sempre la funzione per cancellare, a volta l'utente a cambiato idea e non la cancella
+    bool result = dbSetUp("cancel") as bool;
+    if(result == true){
+      setState(() {
+        this._arrayLezione=_arrayLezione;
+      });
+    }else{
+      //da fare: da gestire cosa fare se non è stato cancellato
+    }
+
   }
 
   String getMonth(int num){
@@ -194,6 +204,40 @@ class _ListElemDbState extends State<ListElemDb> {
 
     _arrayLezione = widget.map[widget.date]!;
     _arrayLezione.sort((a, b) => a.compareTo(b));
+
+  }
+
+  Future<bool> dbSetUp(String _cambio) async {
+    bool result = false;
+    if(_cambio == "confirm"){
+      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
+      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+
+      if (response.statusCode == 200) {
+        result = true; //devo ricevere la conferma true/false
+      }else{
+        result = false;
+      }
+
+
+    }
+    else if(_cambio == "cancel"){
+      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
+      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+
+      if (response.statusCode == 200) {
+        result = true; //devo ricevere la conferma true/false
+      }else{
+        result = false;
+      }
+
+
+    }
+    else{
+      result = false;
+    }
+
+    return result;
 
   }
 
@@ -349,12 +393,15 @@ class _ListElemDbState extends State<ListElemDb> {
                         motion: StretchMotion(), children: [
                         SlidableAction(
                           onPressed: (context) {
+
+                            //Da fare: manca il codice per aggiornare il db
+                            bool result = dbSetUp("confirm") as bool;
+
+                            //da mettere l'if per result
                             //toglie dalla lista
                             setState(() {
                               _arrayLezione.removeAt(i);
                             });
-
-                            //Da fare: manca il codice per aggiornare il db
 
                           },
                           backgroundColor: Colors.green,
@@ -366,6 +413,8 @@ class _ListElemDbState extends State<ListElemDb> {
                             //toglie dalla lista
                             showDialog(context: context, builder: (context) => ButtonSlidableResponse(_arrayLezione, i, callback: callbackData));
                             //Da fare: manca il codice per aggiornare il db
+                            //da controllare che l'utente abbia di fatto scelto di cancellare quella lezione,
+                            //dbSetUp("cancel"); //l'ho messo dentro la callback function
                           },
                           backgroundColor: Colors.red,
                           icon: Icons.delete,
