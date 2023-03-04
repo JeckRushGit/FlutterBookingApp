@@ -44,7 +44,34 @@ class _CalendarPageState extends State<CalendarPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+
+
+
+
+
+
+
+
+
+
+
+
+
     myStream = _getTeachings();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     model = CalendarModel();
     model2 = Other();
     sCourse = SelectedCourse();

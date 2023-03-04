@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
               child: Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: TabBarView(physics: const NeverScrollableScrollPhysics(),children: [       // Viste relative alle 3 pagine
-                  AgendaPage(),
+                  AgendaPage(user: user ),
                   CalendarPage(user: user,),
                   ProfilePage(user: user)
                 ]),

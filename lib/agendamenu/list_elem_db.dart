@@ -1,21 +1,30 @@
+import 'dart:convert';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:iconsax/iconsax.dart';
-
+import 'package:progetto_ium/modules/course.dart';
 
 import '../custom_text.dart';
+import 'agendapage.dart';
 import 'button_for_slidable.dart';
 import 'button_for_the_slidable.dart';
 
+import 'package:http/http.dart' as http;
+import '../startingday.dart';
 
-class ListElem extends StatefulWidget {
-  const ListElem({Key? key, required}) : super(key: key);
+
+class ListElemDb extends StatefulWidget {
+  Map<KeyLezione, List<Lezione>> map;
+  KeyLezione date;
+  ListElemDb({Key? key, required this.map, required this.date }) : super(key: key);
 
 @override
-State<ListElem> createState() => _ListElemState();
+State<ListElemDb> createState() => _ListElemDbState();
 }
 
-class _ListElemState extends State<ListElem> {
+class _ListElemDbState extends State<ListElemDb> {
   bool flag = true;
   double _width = 370;
   double _height = 96;
@@ -24,20 +33,212 @@ class _ListElemState extends State<ListElem> {
 
   //Da fare:
   //Da prendere dal DB
-  String _giorno = "2" ;
-  String _meseAbb = "Jan" ;
-  String _mese = "January" ;
-  List<String> _arrayListMaterie = ["Algebra I","Programmazione II","Algebra I","Prog III"];
-  List<String> _arrayListOrari = ["15:00","17:00", "15:00","17:00"];
-  List<String> _arrayListProf = ["Mario Rossi","Eduardo Correia", "Ardissono","Cardone Felice"];
+  late String _giorno;
+  late String _meseAbb;
+  late String _mese;
+  late List<Lezione> _arrayLezione;
+  //List<String> _arrayListMaterie = ["Algebra I","Programmazione II","Algebra I","Prog III"];
+  //List<String> _arrayListOrari = ["15:00","17:00", "15:00","17:00"];
+  //List<String> _arrayListProf = ["Mario Rossi","Eduardo Correia", "Ardissono","Cardone Felice"];
 
 
-  callbackData(_arrayListMaterie,_arrayListOrari,_arrayListProf ){
-    setState(() {
-      this._arrayListMaterie=_arrayListMaterie;
-      this._arrayListOrari = _arrayListOrari;
-      this._arrayListProf = _arrayListProf;
-    });
+  callbackData(_arrayLezione ){
+    //da fare non può chiamare sempre la funzione per cancellare, a volta l'utente a cambiato idea e non la cancella
+    bool result = dbSetUp("cancel") as bool;
+    if(result == true){
+      setState(() {
+        this._arrayLezione=_arrayLezione;
+      });
+    }else{
+      //da fare: da gestire cosa fare se non è stato cancellato
+    }
+
+  }
+
+  String getMonth(int num){
+    String month = "";
+    switch (num){
+      case 1:
+        if(num == 1){
+          month = "January";
+        }
+        break;
+      case 2:
+        if(num == 2){
+          month = "February";
+        }
+        break;
+      case 3:
+        if(num == 3){
+          month = "March";
+        }
+        break;
+      case 4:
+        if(num == 4){
+          month = "April";
+        }
+        break;
+      case 5:
+        if(num == 5){
+          month = "May";
+        }
+        break;
+      case 6:
+        if(num == 6){
+          month = "June";
+        }
+        break;
+      case 7:
+        if(num == 7){
+          month = "July";
+        }
+        break;
+      case 8:
+        if(num == 8){
+          month = "August";
+        }
+        break;
+      case 9:
+        if(num == 9){
+          month = "September";
+        }
+        break;
+      case 10:
+        if(num == 10){
+          month = "October";
+        }
+        break;
+      case 11:
+        if(num == 11){
+          month = "November";
+        }
+        break;
+      case 12:
+        if(num == 12){
+          month = "December";
+        }
+        break;
+      default:
+        month = "Month";
+    }
+    return month;
+  }
+
+  String getMonthAbb(int num){
+    String month = "";
+    switch (num){
+      case 1:
+        if(num == 1){
+          month = "Jan";
+        }
+        break;
+      case 2:
+        if(num == 2){
+          month = "Feb";
+        }
+        break;
+      case 3:
+        if(num == 3){
+          month = "Mar";
+        }
+        break;
+      case 4:
+        if(num == 4){
+          month = "Apr";
+        }
+        break;
+      case 5:
+        if(num == 5){
+          month = "May";
+        }
+        break;
+      case 6:
+        if(num == 6){
+          month = "Jun";
+        }
+        break;
+      case 7:
+        if(num == 7){
+          month = "Jul";
+        }
+        break;
+      case 8:
+        if(num == 8){
+          month = "Aug";
+        }
+        break;
+      case 9:
+        if(num == 9){
+          month = "Sep";
+        }
+        break;
+      case 10:
+        if(num == 10){
+          month = "Oct";
+        }
+        break;
+      case 11:
+        if(num == 11){
+          month = "Nov";
+        }
+        break;
+      case 12:
+        if(num == 12){
+          month = "Dec";
+        }
+        break;
+      default:
+        month = "";
+    }
+    return month;
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    _giorno = widget.date.day;
+    _mese = getMonth(int.parse(widget.date.month));
+    _meseAbb = getMonthAbb(int.parse(widget.date.month));
+
+    _arrayLezione = widget.map[widget.date]!;
+    _arrayLezione.sort((a, b) => a.compareTo(b));
+
+  }
+
+  Future<bool> dbSetUp(String _cambio) async {
+    bool result = false;
+    if(_cambio == "confirm"){
+      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
+      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+
+      if (response.statusCode == 200) {
+        result = true; //devo ricevere la conferma true/false
+      }else{
+        result = false;
+      }
+
+
+    }
+    else if(_cambio == "cancel"){
+      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
+      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+
+      if (response.statusCode == 200) {
+        result = true; //devo ricevere la conferma true/false
+      }else{
+        result = false;
+      }
+
+
+    }
+    else{
+      result = false;
+    }
+
+    return result;
+
   }
 
 
@@ -89,7 +290,7 @@ class _ListElemState extends State<ListElem> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for(int i=0; i < _arrayListMaterie.length ;i++)
+                        for(int i=0; i < _arrayLezione.length ;i++)
                           if(i<3)
                             Row( children: [
                               const Icon(
@@ -100,14 +301,14 @@ class _ListElemState extends State<ListElem> {
                               Expanded(
                                 flex: 1,
                                 child: CustomText(
-                                  text: _arrayListOrari[i] + " - "+ _arrayListMaterie[i] ,
+                                  text: _arrayLezione[i].hour + ": "+ _arrayLezione[i].course.course_titol ,
                                   size: 15,
                                   weight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
                               )
                             ]),
-                        if(_arrayListMaterie.isNotEmpty)
+                        if(_arrayLezione.isNotEmpty)
                           Flexible(
                             child: TextButton(
                                 onPressed: () {
@@ -185,22 +386,22 @@ class _ListElemState extends State<ListElem> {
                     ),
                   ),
                 ),
-                for(int i=0; i < _arrayListMaterie.length ;i++)
+                for(int i=0; i < _arrayLezione.length ;i++)
                   if(i<4)
                     Slidable(
                       startActionPane: ActionPane(
                         motion: StretchMotion(), children: [
                         SlidableAction(
                           onPressed: (context) {
-                            //toglie dalla lista
-                            //_arrayListMaterie _arrayListOrari  _arrayListProf
-                            setState(() {
-                              _arrayListMaterie.removeAt(i);
-                              _arrayListOrari.removeAt(i);
-                              _arrayListProf.removeAt(i);
-                            });
 
                             //Da fare: manca il codice per aggiornare il db
+                            bool result = dbSetUp("confirm") as bool;
+
+                            //da mettere l'if per result
+                            //toglie dalla lista
+                            setState(() {
+                              _arrayLezione.removeAt(i);
+                            });
 
                           },
                           backgroundColor: Colors.green,
@@ -210,8 +411,10 @@ class _ListElemState extends State<ListElem> {
                         SlidableAction(
                           onPressed: (context) {
                             //toglie dalla lista
-                            showDialog(context: context, builder: (context) => ButtonForSlidableResponse(_arrayListMaterie, _arrayListOrari,  _arrayListProf, i, callback: callbackData));
+                            showDialog(context: context, builder: (context) => ButtonSlidableResponse(_arrayLezione, i, callback: callbackData));
                             //Da fare: manca il codice per aggiornare il db
+                            //da controllare che l'utente abbia di fatto scelto di cancellare quella lezione,
+                            //dbSetUp("cancel"); //l'ho messo dentro la callback function
                           },
                           backgroundColor: Colors.red,
                           icon: Icons.delete,
@@ -239,7 +442,7 @@ class _ListElemState extends State<ListElem> {
                                 Expanded(
                                   flex: 12,
                                   child: CustomText(
-                                    text: _arrayListOrari[i] + " - "+ _arrayListOrari[i] ,
+                                    text: _arrayLezione[i].hour ,
                                     size: 15,
                                     weight: FontWeight.w600,
                                     color: Colors.white,
@@ -249,7 +452,7 @@ class _ListElemState extends State<ListElem> {
                                 Expanded(
                                   flex: 12,
                                   child: CustomText(
-                                    text: _arrayListMaterie[i],
+                                    text: _arrayLezione[i].course.course_titol,
                                     size: 15,
                                     weight: FontWeight.w300,
                                     color: Colors.white,
@@ -264,7 +467,7 @@ class _ListElemState extends State<ListElem> {
                               child: Expanded(
                                 flex: 1,
                                 child: CustomText(
-                                  text: "Prof.:  " + _arrayListProf[i],
+                                  text: "Prof.: " + _arrayLezione[i].professor.name,
                                   size: 15,
                                   weight: FontWeight.w300,
                                   color: Colors.white,
@@ -274,12 +477,10 @@ class _ListElemState extends State<ListElem> {
                             Divider(
                                 color: Colors.white
                             ),
-
                           ],
                         ),
                       ),
                     )
-
               ],
             ),
           ),

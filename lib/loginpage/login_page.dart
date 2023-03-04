@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<bool> Foo(String email, String password) async {
     try {
       var response = await http.post(
-          Uri.parse("http://192.168.1.37:8082/tweb2_0_war_exploded/ServletLogin"),
+          Uri.parse("$ip/ServletLogin"),
           body: {
             'email': email,
             'password': password
@@ -48,6 +48,38 @@ class _LoginPageState extends State<LoginPage> {
     }
     return false;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

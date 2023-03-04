@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class AgendaMenu extends StatefulWidget {
-  const AgendaMenu({Key? key}) : super(key: key);
+  final Function callBack;
+
+  const AgendaMenu({Key? key, required this.callBack}) : super(key: key);
 
   @override
   State<AgendaMenu> createState() => _AgendaMenuState();
@@ -46,7 +48,10 @@ class _AgendaMenuState extends State<AgendaMenu> {
         iconEnabledColor: Color.fromARGB(255, 255, 255, 255),
         borderRadius: BorderRadius.circular(16),
         items: items.map(buildMenuItem).toList(),
-        onChanged: (value) => setState(() => this.value = value!),
+        onChanged: (value){
+          widget.callBack(value);
+          setState(() => this.value = value!);
+        },
       ),
     );
   }

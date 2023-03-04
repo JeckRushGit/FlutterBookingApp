@@ -92,23 +92,25 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
   }
 
   void _popUpConf() {
-    List<String> splittedString = widget.hour.split("-");
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          actionsAlignment: MainAxisAlignment.spaceAround,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(24))),
-              content: CustomText(
+    if(!widget.prenotata){
+      List<String> splittedString = widget.hour.split("-");
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            actionsAlignment: MainAxisAlignment.spaceAround,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(24))),
+            content: CustomText(
                 size: 22,
-                  text: "Sei sicuro di voler prenotare la lezione di ${widget.course.course_titol} tenuta da ${widget.professor.toStringDropDown()} il ${widget.day}/1 dalle ${splittedString[0]} alle ${splittedString[1]} ?"),
-          actions: [
-            IconButton(icon : const Icon(Iconsax.close_circle,size: 40,),color: Colors.red,onPressed: (){Navigator.pop(context);},),
-            IconButton(icon : const Icon(Iconsax.tick_circle,size: 40,),color: Colors.green,onPressed: (){
-              Navigator.pop(context);
-              _changeState();}),
-          ],
-            ));
+                text: "Sei sicuro di voler prenotare la lezione di ${widget.course.course_titol} tenuta da ${widget.professor.toStringDropDown()} il ${widget.day}/1 dalle ${splittedString[0]} alle ${splittedString[1]} ?"),
+            actions: [
+              IconButton(icon : const Icon(Iconsax.close_circle,size: 40,),color: Colors.red,onPressed: (){Navigator.pop(context);},),
+              IconButton(icon : const Icon(Iconsax.tick_circle,size: 40,),color: Colors.green,onPressed: (){
+                Navigator.pop(context);
+                _changeState();}),
+            ],
+          ));
+    }
   }
 
   Future<bool> _bookTeaching(Course course, Professor professor, User user,
