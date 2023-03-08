@@ -44,34 +44,7 @@ class _CalendarPageState extends State<CalendarPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
-
-
-
-
-
-
-
-
-
-
-
-
-
     myStream = _getTeachings();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     model = CalendarModel();
     model2 = Other();
     sCourse = SelectedCourse();
@@ -91,7 +64,7 @@ class _CalendarPageState extends State<CalendarPage>
   void changeProfessor(Professor professor) {
     sProfessor.updateSelectedProfessor(professor);
     setState((){
-      bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse,sProfessor.selectedProfessor);
+      bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse,sProfessor.selectedProfessor,widget.user);
     });
   }
 
@@ -129,51 +102,60 @@ class _CalendarPageState extends State<CalendarPage>
   }
 
   Stream<Map<int, List<bool>>> _getBookingsForCourseAndProfessor(
-      Course course, Professor professor) async* {
-    Map<int, List<bool>> map = {};
-    var response = await http.post(
-        Uri.parse(
-            "$ip/ServletGetAvBookings"),
-        body: {
-          'titoloCorso': course.course_titol,
-          'emailProfessore': professor.email
-        }).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
+      Course course, Professor professor,User user) async* {
 
-
-      /*PERICOLOSO !!!! CAMBIARE IL PRIMA POSSIBILE*/
-      int firstDayOfWeek = startingDayOfWeek;
-      for(int i = 0; i < 5 ; i++){
-        List<bool> list = List<bool>.filled(4, false, growable: false);
-        map[firstDayOfWeek] = list;
-        firstDayOfWeek++;
-      }
-
-      /*************************************/
-
-      List<dynamic> jsonMap = jsonDecode(response.body);
-      for (var c in jsonMap) {
-        if (!map.containsKey(c["day"])) {
+    try{
+      Map<int, List<bool>> map = {};
+      var response = await http.post(
+          Uri.parse(
+              "$ip/ServletGetAvBookings"),
+          body: {
+            'titoloCorso': course.course_titol,
+            'emailProfessore': professor.email,
+            'emailUtente': user.email
+          }).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        /*PERICOLOSO !!!! CAMBIARE IL PRIMA POSSIBILE*/
+        int firstDayOfWeek = startingDayOfWeek;
+        for(int i = 0; i < 5 ; i++){
           List<bool> list = List<bool>.filled(4, false, growable: false);
-          map[c["day"]] = list;
+          map[firstDayOfWeek] = list;
+          firstDayOfWeek++;
         }
-        switch (c["hour"]) {
-          case "15:00-16:00":
-            map[c["day"]]![0] = true;
-            break;
-          case "16:00-17:00":
-            map[c["day"]]![1] = true;
-            break;
-          case "17:00-18:00":
-            map[c["day"]]![2] = true;
-            break;
-          case "18:00-19:00":
-            map[c["day"]]![3] = true;
-            break;
+
+        /*************************************/
+
+        List<dynamic> jsonMap = jsonDecode(response.body);
+
+        for (var c in jsonMap) {
+          if (!map.containsKey(c["day"])) {
+            List<bool> list = List<bool>.filled(4, false, growable: false);
+            map[c["day"]] = list;
+          }
+          switch (c["hour"]) {
+            case "15:00-16:00":
+              map[c["day"]]![0] = true;
+              break;
+            case "16:00-17:00":
+              map[c["day"]]![1] = true;
+              break;
+            case "17:00-18:00":
+              map[c["day"]]![2] = true;
+              break;
+            case "18:00-19:00":
+              map[c["day"]]![3] = true;
+              break;
+          }
         }
       }
+
+      yield map;
+    }catch(e){
+      print(e);
     }
-    yield map;
+
+
+
   }
 
   @override
@@ -188,7 +170,7 @@ class _CalendarPageState extends State<CalendarPage>
               model2.updateListOfProfessor(model.listOfProfessor);
               sCourse.updateSelectedCourse(model.listOfCourses[0]);
               sProfessor.updateSelectedProfessor(model.listOfProfessor[0]);
-              bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse, sProfessor.selectedProfessor);
+              bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse, sProfessor.selectedProfessor,widget.user);
               needToRebuild = false;
             }
             return GestureDetector(
@@ -312,7 +294,7 @@ class _CalendarPageState extends State<CalendarPage>
                                       ),
                                     );
                                   } else {
-                                    return const Placeholder();
+                                    return Center(child: CircularProgressIndicator(),);
                                   }
                                 }),
                           ),

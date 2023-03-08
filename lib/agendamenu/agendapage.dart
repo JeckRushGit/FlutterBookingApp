@@ -136,9 +136,6 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
 
 
       _arrayGiorni.sort((a, b) => a.compareTo(b));  /*Per ordinare l'array di KeyLezione*/
-
-
-      print(map.isNotEmpty);
       yield map;
   }
 
@@ -154,7 +151,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
 
     _arrayGiorni = [];
     setState(() {
-      print("scrivi tu");
+
       myStream = _getLezioni();
     });
   }
@@ -169,7 +166,6 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
       builder: (context, snapshot) {
         if (snapshot.hasData){
           var map = snapshot.data!;
-          print(map);
            return SingleChildScrollView(
               child: Column(
                 children: [
@@ -213,7 +209,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
                           Padding(
                             padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                             //child: ListElem(),
-                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,),
+                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,user: widget.user,),
                           ),
                       ],
                     ),
@@ -245,7 +241,8 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               ),
             );
         }else{
-          return Placeholder();
+
+          return Center(child: CircularProgressIndicator());
         }
       },
     );
