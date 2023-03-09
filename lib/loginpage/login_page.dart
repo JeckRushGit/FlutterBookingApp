@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   final storage = const FlutterSecureStorage();
 
-  Future<bool> Foo(String email, String password) async {
+  Future<int> Foo(String email, String password) async {
     try {
       var response = await http.post(
           Uri.parse("$ip/ServletLogin"),
@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final token = response.body;
         await storage.write(key: 'jwt', value: token);
-        return true;
+        return 1;
       } else if (response.statusCode == 401) {
         print("Wrong password");
       } else if (response.statusCode == 404) {
@@ -42,43 +42,13 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         print("Something went wrong");
       }
-      return false;
+      return 0;
     } catch (e) {
       print("Qualcosa è andato storto con il server: $e");
+      return -1;
     }
-    return false;
+    return -1;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   @override
@@ -139,14 +109,25 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.white,
                 padding: const EdgeInsets.all(13),
                 onPressed: () async {
-                  bool res =
+                  int res =
                       await Foo(emailController.text, passwordController.text);
-                  if (res) {
+                  if (res == 1) {
                     if (!mounted) return;
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => HomePage()));
-                  } else {
-                    print("falso");
+                  } else if(res == 0) {
+                    showDialog(
+                        context: context,
+                        builder: (context) => const AlertDialog(
+                          title: CustomText(text: "Email or password is wrong, try again"),
+                        ));
+                  }
+                  else{
+                    showDialog(
+                        context: context,
+                        builder: (context) => const AlertDialog(
+                          title: CustomText(text: "Service not available, try again"),
+                        ));
                   }
                 },
                 child: Row(

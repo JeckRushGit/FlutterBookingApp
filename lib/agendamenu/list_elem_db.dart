@@ -332,7 +332,7 @@ class _ListElemDbState extends State<ListElemDb> {
           clipBehavior: Clip.hardEdge,
           key: Key('2'),
           width: _width,
-          height: (_height*5)-20,
+          //height: (_height*5)-20,
           decoration: BoxDecoration(
             color: _color,
             borderRadius: _borderRadius,
@@ -383,7 +383,7 @@ class _ListElemDbState extends State<ListElemDb> {
                   ),
                 ),
                 for(int i=0; i < _arrayLezione.length ;i++)
-                  if(i<4)
+                  //if(i<4)
                     Slidable(
                       enabled: widget.slidable_enabled,
                       startActionPane: ActionPane(
