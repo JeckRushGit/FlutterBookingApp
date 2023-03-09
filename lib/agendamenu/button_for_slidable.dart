@@ -51,8 +51,8 @@ class _ButtonSlidableResponseState extends State<ButtonSlidableResponse> {
           ),
           color: Colors.green,
           onPressed: () {
-            widget._arrayLezione.removeAt(widget.i);
-            widget.callback(widget._arrayLezione);
+            //widget._arrayLezione.removeAt(widget.i);
+            widget.callback(widget._arrayLezione,widget.i);
             Navigator.pop(context);
           },
         )

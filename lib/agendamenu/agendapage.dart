@@ -97,6 +97,7 @@ class AgendaPage extends StatefulWidget {
 class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
 
   //getBookingsForUser
+  bool slidable_enabled = true;
   late int state;
   late Stream myStream;
   late List<KeyLezione> _arrayGiorni = [];
@@ -145,11 +146,14 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
   void callbackMenu(String _selectedMenu){
     if(_selectedMenu == 'To Do'){
       state = 1;
+      slidable_enabled = true;
     }else if(_selectedMenu == 'Checked'){
       state = 2;
+      slidable_enabled = false;
       //myStream = _getLezioni();
     }else if(_selectedMenu == 'Canceled'){
       state = 3;
+      slidable_enabled = false;
     }else{}
 
     _arrayGiorni = [];
@@ -213,7 +217,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
                           Padding(
                             padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                             //child: ListElem(),
-                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,),
+                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,user: widget.user,slidable_enabled: slidable_enabled,),
                           ),
                       ],
                     ),

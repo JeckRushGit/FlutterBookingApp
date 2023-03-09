@@ -7,6 +7,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:progetto_ium/modules/course.dart';
 
 import '../custom_text.dart';
+import '../modules/user.dart';
 import 'agendapage.dart';
 import 'button_for_slidable.dart';
 import 'button_for_the_slidable.dart';
@@ -18,7 +19,9 @@ import '../startingday.dart';
 class ListElemDb extends StatefulWidget {
   Map<KeyLezione, List<Lezione>> map;
   KeyLezione date;
-  ListElemDb({Key? key, required this.map, required this.date }) : super(key: key);
+  User user;
+  bool slidable_enabled;
+  ListElemDb({Key? key, required this.map, required this.date, required this.user, required this.slidable_enabled }) : super(key: key);
 
 @override
 State<ListElemDb> createState() => _ListElemDbState();
@@ -31,26 +34,29 @@ class _ListElemDbState extends State<ListElemDb> {
   Color _color = Color.fromRGBO(61, 90, 128, 1);
   BorderRadiusGeometry _borderRadius = BorderRadius.circular(24);
 
-  //Da fare:
-  //Da prendere dal DB
   late String _giorno;
   late String _meseAbb;
   late String _mese;
   late List<Lezione> _arrayLezione;
-  //List<String> _arrayListMaterie = ["Algebra I","Programmazione II","Algebra I","Prog III"];
-  //List<String> _arrayListOrari = ["15:00","17:00", "15:00","17:00"];
-  //List<String> _arrayListProf = ["Mario Rossi","Eduardo Correia", "Ardissono","Cardone Felice"];
 
-
-  callbackData(_arrayLezione ){
-    //da fare non può chiamare sempre la funzione per cancellare, a volta l'utente a cambiato idea e non la cancella
-    bool result = dbSetUp("cancel") as bool;
+  callbackData(_arrayLezione, i ) async { //non ci sono i tipi per io parametri, da testare se funziona con i tipi segnati
+    bool result = await dbSetUp("cancel", _arrayLezione[i]);
     if(result == true){
       setState(() {
-        this._arrayLezione=_arrayLezione;
+        //this._arrayLezione=_arrayLezione;
+        this._arrayLezione.removeAt(i);
       });
+      showDialog(
+          context: context,
+          builder: (context) => const AlertDialog(
+            title: CustomText(text: "Your lesson was canceled!"),
+          ));
     }else{
-      //da fare: da gestire cosa fare se non è stato cancellato
+      showDialog(
+          context: context,
+          builder: (context) => const AlertDialog(
+            title: CustomText(text: "Your lesson was NOT canceled, try again later"),
+          ));
     }
 
   }
@@ -207,38 +213,28 @@ class _ListElemDbState extends State<ListElemDb> {
 
   }
 
-  Future<bool> dbSetUp(String _cambio) async {
-    bool result = false;
-    if(_cambio == "confirm"){
-      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
-      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+  Future<bool> dbSetUp(String cambio, Lezione lezione) async {
+    if(cambio == "confirm"){
+      var response = await http.post(Uri.parse("$ip/ServletSetBookings"), body: {"email_professore": lezione.professor.email,"email_utente": widget.user.email,"corso": lezione.course.course_titol,"giorno": widget.date.day,"mese": widget.date.month,"orario":  lezione.hour,"stato": "2"});
 
       if (response.statusCode == 200) {
-        result = true; //devo ricevere la conferma true/false
+        return true;
       }else{
-        result = false;
+        return false;
       }
-
-
     }
-    else if(_cambio == "cancel"){
-      var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: {});
-      //passare tutte le informazioni della prenotazione e se è da confermarla o cancellarla
+    else if(cambio == "cancel"){
+      var response = await http.post(Uri.parse("$ip/ServletSetBookings"), body: {"email_professore": lezione.professor.email,"email_utente": widget.user.email,"corso": lezione.course.toString(),"giorno": widget.date.day,"mese": widget.date.month,"orario":  lezione.hour,"stato": "3"});
 
       if (response.statusCode == 200) {
-        result = true; //devo ricevere la conferma true/false
+        return true;
       }else{
-        result = false;
+        return false;
       }
-
-
     }
     else{
-      result = false;
+      return false;
     }
-
-    return result;
-
   }
 
 
@@ -316,7 +312,7 @@ class _ListElemDbState extends State<ListElemDb> {
                                     flag = !flag;
                                   });
                                 },
-                                child: CustomText(
+                                child: const CustomText(
                                   text: "..." ,
                                   size: 18,
                                   weight: FontWeight.bold,
@@ -389,20 +385,29 @@ class _ListElemDbState extends State<ListElemDb> {
                 for(int i=0; i < _arrayLezione.length ;i++)
                   if(i<4)
                     Slidable(
+                      enabled: widget.slidable_enabled,
                       startActionPane: ActionPane(
                         motion: StretchMotion(), children: [
                         SlidableAction(
-                          onPressed: (context) {
-
-                            //Da fare: manca il codice per aggiornare il db
-                            bool result = dbSetUp("confirm") as bool;
-
-                            //da mettere l'if per result
-                            //toglie dalla lista
-                            setState(() {
-                              _arrayLezione.removeAt(i);
-                            });
-
+                          onPressed: (context) async {
+                            bool result = await dbSetUp("confirm", _arrayLezione[i]);
+                            if(result == true){
+                              //toglie dalla lista
+                              setState(() {
+                                _arrayLezione.removeAt(i);
+                              });
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => const AlertDialog(
+                                    title: CustomText(text: "Your lesson was confirmed!"),
+                                  ));
+                            }else{
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => const AlertDialog(
+                                    title: CustomText(text: "Your lesson was NOT confirmed, try again later"),
+                                  ));
+                            }
                           },
                           backgroundColor: Colors.green,
                           icon: Icons.check,
@@ -412,9 +417,6 @@ class _ListElemDbState extends State<ListElemDb> {
                           onPressed: (context) {
                             //toglie dalla lista
                             showDialog(context: context, builder: (context) => ButtonSlidableResponse(_arrayLezione, i, callback: callbackData));
-                            //Da fare: manca il codice per aggiornare il db
-                            //da controllare che l'utente abbia di fatto scelto di cancellare quella lezione,
-                            //dbSetUp("cancel"); //l'ho messo dentro la callback function
                           },
                           backgroundColor: Colors.red,
                           icon: Icons.delete,
@@ -428,11 +430,12 @@ class _ListElemDbState extends State<ListElemDb> {
                           children: [
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.arrow_back_ios,
-                                  color: Colors.grey,
-                                  size: 14,
-                                ),
+                                if(widget.slidable_enabled)
+                                  const Icon(
+                                    Icons.arrow_back_ios,
+                                    color: Colors.grey,
+                                    size: 14,
+                                  ),
                                 SizedBox(width: 20),
                                 const Icon(
                                   Iconsax.blend5,
@@ -474,7 +477,7 @@ class _ListElemDbState extends State<ListElemDb> {
                                 ),
                               ),
                             ),
-                            Divider(
+                            const Divider(
                                 color: Colors.white
                             ),
                           ],
