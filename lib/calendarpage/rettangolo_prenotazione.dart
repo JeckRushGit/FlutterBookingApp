@@ -134,7 +134,13 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
       return true;
     } else if (response.statusCode == 400) {
       throw "lezione non disponibile";
-    } else if (response.statusCode == 500) {
+    } else if(response.statusCode == 406){
+      showDialog(
+          context: context,
+          builder: (context) => const AlertDialog(
+            title: CustomText(text: "Wait for a minute"),
+          ));
+    }else if (response.statusCode == 500) {
       print("errore con il server QUA");
     }
     return false;
