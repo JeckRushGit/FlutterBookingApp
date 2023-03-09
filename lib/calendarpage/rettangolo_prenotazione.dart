@@ -26,17 +26,17 @@ class RettangoloPrenotazione extends StatefulWidget {
 
   RettangoloPrenotazione(
       {super.key,
-      required this.hour,
-      required this.day,
-      required this.prenotata,
-      required this.width,
-      required this.heigth,
-      required this.topText,
-      required this.user,
-      required this.course,
-      required this.professor,
-      required this.callBackReload,
-      this.bottomText = ""}) {
+        required this.hour,
+        required this.day,
+        required this.prenotata,
+        required this.width,
+        required this.heigth,
+        required this.topText,
+        required this.user,
+        required this.course,
+        required this.professor,
+        required this.callBackReload,
+        this.bottomText = ""}) {
     if (prenotata) {
       deco = BoxDecoration(
           boxShadow: kElevationToShadow[2],
@@ -69,15 +69,15 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
           showDialog(
               context: context,
               builder: (context) => const AlertDialog(
-                    title: CustomText(text: "Lezione prenotata con successo"),
-                  ));
+                title: CustomText(text: "Lezione prenotata con successo"),
+              ));
         }
       } catch (e) {
         showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                  title: CustomText(text: e.toString()),
-                ));
+              title: CustomText(text: e.toString()),
+            ));
         widget.callBackReload();
       }
       setState(() {
@@ -134,7 +134,13 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
       return true;
     } else if (response.statusCode == 400) {
       throw "lezione non disponibile";
-    } else if (response.statusCode == 500) {
+    } else if(response.statusCode == 406){
+      showDialog(
+          context: context,
+          builder: (context) => const AlertDialog(
+            title: CustomText(text: "Wait for a minute"),
+          ));
+    }else if (response.statusCode == 500) {
       print("errore con il server QUA");
     }
     return false;
