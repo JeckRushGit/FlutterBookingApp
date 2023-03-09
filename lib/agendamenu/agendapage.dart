@@ -97,6 +97,7 @@ class AgendaPage extends StatefulWidget {
 class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
 
   //getBookingsForUser
+  bool slidable_enabled = true;
   late int state;
   late Stream myStream;
   late List<KeyLezione> _arrayGiorni = [];
@@ -136,22 +137,28 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
 
 
       _arrayGiorni.sort((a, b) => a.compareTo(b));  /*Per ordinare l'array di KeyLezione*/
+
+
+      print(map.isNotEmpty);
       yield map;
   }
 
   void callbackMenu(String _selectedMenu){
     if(_selectedMenu == 'To Do'){
       state = 1;
+      slidable_enabled = true;
     }else if(_selectedMenu == 'Checked'){
       state = 2;
+      slidable_enabled = false;
       //myStream = _getLezioni();
     }else if(_selectedMenu == 'Canceled'){
       state = 3;
+      slidable_enabled = false;
     }else{}
 
     _arrayGiorni = [];
     setState(() {
-
+      print("scrivi tu");
       myStream = _getLezioni();
     });
   }
@@ -166,6 +173,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
       builder: (context, snapshot) {
         if (snapshot.hasData){
           var map = snapshot.data!;
+          print(map);
            return SingleChildScrollView(
               child: Column(
                 children: [
@@ -209,7 +217,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
                           Padding(
                             padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                             //child: ListElem(),
-                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,user: widget.user,),
+                            child: ListElemDb(map: map, date: _arrayGiorni[i] ,user: widget.user,slidable_enabled: slidable_enabled,),
                           ),
                       ],
                     ),
@@ -241,8 +249,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               ),
             );
         }else{
-
-          return Center(child: CircularProgressIndicator());
+          return Placeholder();
         }
       },
     );
