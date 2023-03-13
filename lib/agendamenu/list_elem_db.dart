@@ -239,252 +239,246 @@ class _ListElemDbState extends State<ListElemDb> {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      flex: 1,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 1200),
-        reverseDuration: const Duration(milliseconds: 700),
-        transitionBuilder: (child , animation) => SizeTransition(sizeFactor: CurvedAnimation( curve: Curves.easeOutExpo, parent: animation),axis: Axis.vertical,axisAlignment: 1, child: Center(child: child),),
-        child: flag ?
-        Container(
-            clipBehavior: Clip.hardEdge,
-            key: Key('1'),
-            width: _width,
-            height: _height,
-            decoration: BoxDecoration(
-              color: _color,
-              borderRadius: _borderRadius,
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(9, 10, 0, 0),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(9, 5, 9, 9),
-                    child: Column(
-                      children: [
-                        CustomText(
-                          text: _giorno ,
-                          size: 32,
-                          weight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        CustomText(
-                          text:  _meseAbb ,
-                          size: 18,
-                          weight: FontWeight.w100,
-                          color: Colors.white,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 1200),
+      reverseDuration: const Duration(milliseconds: 700),
+      transitionBuilder: (child , animation) => SizeTransition(sizeFactor: CurvedAnimation( curve: Curves.easeOutExpo, parent: animation),axis: Axis.vertical,axisAlignment: 1, child: Center(child: child),),
+      child: flag ?
+      Container(
+          clipBehavior: Clip.hardEdge,
+          key: Key('1'),
+          width: _width,
+          height: _height,
+          decoration: BoxDecoration(
+            color: _color,
+            borderRadius: _borderRadius,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(9, 10, 0, 0),
+            child: Row(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(9, 5, 9, 9),
+                  child: Column(
+                    children: [
+                      CustomText(
+                        text: _giorno ,
+                        size: 32,
+                        weight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      CustomText(
+                        text:  _meseAbb ,
+                        size: 18,
+                        weight: FontWeight.w100,
+                        color: Colors.white,
+                      )
+                    ],
+                  ),),
+                //SizedBox(width: 55),
+                Spacer(flex: 2,),
+                Expanded(
+                  flex: 10,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for(int i=0; i < _arrayLezione.length ;i++)
+                        if(i<3)
+                          Row( children: [
+                            const Icon(
+                              Iconsax.blend5,
+                              color: Color.fromRGBO(41, 50, 65, 1),
+                              size: 14,
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: CustomText(
+                                text: _arrayLezione[i].hour + ": "+ _arrayLezione[i].course.course_titol ,
+                                size: 15,
+                                weight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            )
+                          ]),
+                      if(_arrayLezione.isNotEmpty)
+                        Flexible(
+                          child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  flag = !flag;
+                                });
+                              },
+                              child: const CustomText(
+                                text: "..." ,
+                                size: 18,
+                                weight: FontWeight.bold,
+                                color: Colors.white,
+                              )
+                          ),
                         )
-                      ],
-                    ),),
-                  //SizedBox(width: 55),
-                  Spacer(flex: 2,),
-                  Expanded(
-                    flex: 10,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for(int i=0; i < _arrayLezione.length ;i++)
-                          if(i<3)
-                            Row( children: [
+                    ],
+                  ),
+                ),
+                Spacer(flex: 1,),
+              ],
+            ),
+          )
+      ) :
+      Container(
+        clipBehavior: Clip.hardEdge,
+        key: Key('2'),
+        width: _width,
+        //height: (_height*5)-20,
+        decoration: BoxDecoration(
+          color: _color,
+          borderRadius: _borderRadius,
+        ),
+        child: SlidableAutoCloseBehavior(
+          closeWhenOpened: true,
+          closeWhenTapped: true,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 6, 0),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    splashRadius: 2.0,
+                    icon: const Icon(
+                      Iconsax.close_circle5,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        flag = !flag;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                  child: Column(
+                    children: [
+                      CustomText(
+                        text: _giorno ,
+                        size: 32,
+                        weight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      CustomText(
+                        text:  _mese ,
+                        size: 18,
+                        weight: FontWeight.w100,
+                        color: Colors.white,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              for(int i=0; i < _arrayLezione.length ;i++)
+                //if(i<4)
+                  Slidable(
+                    enabled: widget.slidable_enabled,
+                    startActionPane: ActionPane(
+                      motion: StretchMotion(), children: [
+                      SlidableAction(
+                        onPressed: (context) async {
+                          bool result = await dbSetUp("confirm", _arrayLezione[i]);
+                          if(result == true){
+                            //toglie dalla lista
+                            setState(() {
+                              _arrayLezione.removeAt(i);
+                            });
+                            showDialog(
+                                context: context,
+                                builder: (context) => const AlertDialog(
+                                  title: CustomText(text: "Your lesson was confirmed!"),
+                                ));
+                          }else{
+                            showDialog(
+                                context: context,
+                                builder: (context) => const AlertDialog(
+                                  title: CustomText(text: "Your lesson was NOT confirmed, try again later"),
+                                ));
+                          }
+                        },
+                        backgroundColor: Colors.green,
+                        icon: Icons.check,
+                        autoClose: true,
+                      ),
+                      SlidableAction(
+                        onPressed: (context) {
+                          //toglie dalla lista
+                          showDialog(context: context, builder: (context) => ButtonSlidableResponse(_arrayLezione, i, callback: callbackData));
+                        },
+                        backgroundColor: Colors.red,
+                        icon: Icons.delete,
+                        autoClose: true,
+                      ),
+                    ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 10, 0, 0),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              if(widget.slidable_enabled)
+                                const Icon(
+                                  Icons.arrow_back_ios,
+                                  color: Colors.grey,
+                                  size: 14,
+                                ),
+                              SizedBox(width: 20),
                               const Icon(
                                 Iconsax.blend5,
                                 color: Color.fromRGBO(41, 50, 65, 1),
                                 size: 14,
                               ),
                               Expanded(
-                                flex: 1,
+                                flex: 12,
                                 child: CustomText(
-                                  text: _arrayLezione[i].hour + ": "+ _arrayLezione[i].course.course_titol ,
+                                  text: _arrayLezione[i].hour ,
                                   size: 15,
                                   weight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
-                              )
-                            ]),
-                        if(_arrayLezione.isNotEmpty)
-                          Flexible(
-                            child: TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    flag = !flag;
-                                  });
-                                },
-                                child: const CustomText(
-                                  text: "..." ,
-                                  size: 18,
-                                  weight: FontWeight.bold,
-                                  color: Colors.white,
-                                )
-                            ),
-                          )
-                      ],
-                    ),
-                  ),
-                  Spacer(flex: 1,),
-                ],
-              ),
-            )
-        ) :
-        Container(
-          clipBehavior: Clip.hardEdge,
-          key: Key('2'),
-          width: _width,
-          //height: (_height*5)-20,
-          decoration: BoxDecoration(
-            color: _color,
-            borderRadius: _borderRadius,
-          ),
-          child: SlidableAutoCloseBehavior(
-            closeWhenOpened: true,
-            closeWhenTapped: true,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 6, 0),
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      splashRadius: 2.0,
-                      icon: const Icon(
-                        Iconsax.close_circle5,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          flag = !flag;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                    child: Column(
-                      children: [
-                        CustomText(
-                          text: _giorno ,
-                          size: 32,
-                          weight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        CustomText(
-                          text:  _mese ,
-                          size: 18,
-                          weight: FontWeight.w100,
-                          color: Colors.white,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                for(int i=0; i < _arrayLezione.length ;i++)
-                  //if(i<4)
-                    Slidable(
-                      enabled: widget.slidable_enabled,
-                      startActionPane: ActionPane(
-                        motion: StretchMotion(), children: [
-                        SlidableAction(
-                          onPressed: (context) async {
-                            bool result = await dbSetUp("confirm", _arrayLezione[i]);
-                            if(result == true){
-                              //toglie dalla lista
-                              setState(() {
-                                _arrayLezione.removeAt(i);
-                              });
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => const AlertDialog(
-                                    title: CustomText(text: "Your lesson was confirmed!"),
-                                  ));
-                            }else{
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => const AlertDialog(
-                                    title: CustomText(text: "Your lesson was NOT confirmed, try again later"),
-                                  ));
-                            }
-                          },
-                          backgroundColor: Colors.green,
-                          icon: Icons.check,
-                          autoClose: true,
-                        ),
-                        SlidableAction(
-                          onPressed: (context) {
-                            //toglie dalla lista
-                            showDialog(context: context, builder: (context) => ButtonSlidableResponse(_arrayLezione, i, callback: callbackData));
-                          },
-                          backgroundColor: Colors.red,
-                          icon: Icons.delete,
-                          autoClose: true,
-                        ),
-                      ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 10, 0, 0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                if(widget.slidable_enabled)
-                                  const Icon(
-                                    Icons.arrow_back_ios,
-                                    color: Colors.grey,
-                                    size: 14,
-                                  ),
-                                SizedBox(width: 20),
-                                const Icon(
-                                  Iconsax.blend5,
-                                  color: Color.fromRGBO(41, 50, 65, 1),
-                                  size: 14,
-                                ),
-                                Expanded(
-                                  flex: 12,
-                                  child: CustomText(
-                                    text: _arrayLezione[i].hour ,
-                                    size: 15,
-                                    weight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const Spacer(flex: 2),
-                                Expanded(
-                                  flex: 12,
-                                  child: CustomText(
-                                    text: _arrayLezione[i].course.course_titol,
-                                    size: 15,
-                                    weight: FontWeight.w300,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const Spacer(flex: 2),
-                              ],
-                            ),
-                            const SizedBox(height: 15,),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Expanded(
-                                flex: 1,
+                              ),
+                              const Spacer(flex: 2),
+                              Expanded(
+                                flex: 12,
                                 child: CustomText(
-                                  text: "Prof.: " + _arrayLezione[i].professor.name,
+                                  text: _arrayLezione[i].course.course_titol,
                                   size: 15,
                                   weight: FontWeight.w300,
                                   color: Colors.white,
                                 ),
                               ),
+                              const Spacer(flex: 2),
+                            ],
+                          ),
+                          const SizedBox(height: 15,),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: CustomText(
+                              text: "Prof.: " + _arrayLezione[i].professor.name,
+                              size: 15,
+                              weight: FontWeight.w300,
+                              color: Colors.white,
                             ),
-                            const Divider(
-                                color: Colors.white
-                            ),
-                          ],
-                        ),
+                          ),
+                          const Divider(
+                              color: Colors.white
+                          ),
+                        ],
                       ),
-                    )
-              ],
-            ),
+                    ),
+                  )
+            ],
           ),
         ),
       ),

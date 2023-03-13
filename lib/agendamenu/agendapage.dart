@@ -248,7 +248,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               ),
             );
         }else{
-          return Placeholder();
+          return Center(child: CircularProgressIndicator(),);
         }
       },
     );

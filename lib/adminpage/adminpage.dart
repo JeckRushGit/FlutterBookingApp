@@ -97,7 +97,7 @@ class _AdminPageState extends State<AdminPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children:  [
                 const Padding(
-                  padding: EdgeInsets.all(30) ,
+                  padding: EdgeInsets.fromLTRB(30, 40, 30, 30),
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: CustomText(
