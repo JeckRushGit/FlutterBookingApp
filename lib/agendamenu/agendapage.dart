@@ -9,7 +9,6 @@ import '../navbar/custom_navbar.dart';
 import 'package:http/http.dart' as http;
 import '../startingday.dart';
 import 'agenda_menu.dart';
-import 'list_elem.dart';
 import 'list_elem_db.dart';
 
 
@@ -178,7 +177,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               child: Column(
                 children: [
                   const Padding(
-                    padding: EdgeInsets.all(30) ,
+                    padding: EdgeInsets.fromLTRB(30, 40, 30, 30),
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: CustomText(

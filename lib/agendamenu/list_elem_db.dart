@@ -10,7 +10,6 @@ import '../custom_text.dart';
 import '../modules/user.dart';
 import 'agendapage.dart';
 import 'button_for_slidable.dart';
-import 'button_for_the_slidable.dart';
 
 import 'package:http/http.dart' as http;
 import '../startingday.dart';
