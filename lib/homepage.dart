@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<User?>(
+    return  FutureBuilder<User?>(
         future: _getUserFromJWT(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {

@@ -1,66 +1,69 @@
-// ignore_for_file: prefer_const_constructors
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:progetto_ium/colors/hexcolor.dart';
-import 'package:progetto_ium/custom_text.dart';
-import 'package:progetto_ium/modules/CalendarModel.dart';
-import 'package:provider/provider.dart';
-import '../modules/course.dart';
+import 'package:http/http.dart' as http;
+import '../colors/hexcolor.dart';
+import '../custom_text.dart';
+import '../modules/user.dart';
+import '../startingday.dart';
 
-class DropDownCourse extends StatefulWidget {
+class DropDownUsers extends StatefulWidget {
+  List<User> listOfUsers;
   final double width;
   final double textFieldHeigth;
   final FocusNode focusNode;
-  final Function callBackCourse;
+  final Function callBackFunction;
 
-  const DropDownCourse(
-      {Key? key,
-      required this.width,
-      required this.textFieldHeigth,
-      required this.focusNode,
-      required this.callBackCourse})
-      : super(key: key);
+  DropDownUsers({Key? key,required this.listOfUsers, required this.width, required this.textFieldHeigth, required this.focusNode,required this.callBackFunction}) : super(key: key);
 
   @override
-  State<DropDownCourse> createState() {
-    return DropDownCourseState();
-  }
+  State<DropDownUsers> createState() => _DropDownUsersState();
 }
 
-class DropDownCourseState extends State<DropDownCourse> {
+class _DropDownUsersState extends State<DropDownUsers> {
+
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  late List<Course> _listOfCourses;
-  late List<Course> _filteredCourses = [];
-  late Course _lastValue;
-  OverlayEntry? _entry;
-  final BorderRadiusGeometry _radiusGeometry1 =
-      const BorderRadius.all(Radius.circular(16));
-  final BorderRadiusGeometry _radiusGeometry2 = const BorderRadius.only(
-      topLeft: Radius.circular(16), topRight: Radius.circular(16));
+  final BorderRadiusGeometry _radiusGeometry1 = const BorderRadius.all(Radius.circular(16));
+  final BorderRadiusGeometry _radiusGeometry2 = const BorderRadius.only(topLeft: Radius.circular(16),topRight: Radius.circular(16));
   late BorderRadiusGeometry _containerGeometry;
-  bool isValid = true;
-  String hintText = "";
+
+  late List<User> _filteredUsers;
+  late User _lastValue;
+  late List<User> _listOfUsers;
+
+  OverlayEntry? _entry;
+
+
   final LayerLink _link = LayerLink();
+  String _hintText = "";
+
+  bool isValid = true;
+
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
+    _listOfUsers = widget.listOfUsers;
+    _filteredUsers = _listOfUsers;
+    _lastValue = _listOfUsers[0];
+    _hintText = _lastValue.email;
     _containerGeometry = _radiusGeometry1;
     widget.focusNode.addListener(() {
       if (widget.focusNode.hasFocus) {
-        if (_filteredCourses.isEmpty) {
-          _filteredCourses = _listOfCourses;
+        if (_filteredUsers.isEmpty) {
+          _filteredUsers = _listOfUsers;
         }
         setState(() {
           _containerGeometry = _radiusGeometry2;
         });
         showMenu();
-        hintText = "";
+        _hintText = "";
       } else {
         setState(() {
-          hintText = _lastValue.course_titol;
+          _hintText = _lastValue.email;
           _containerGeometry = _radiusGeometry1;
         });
         hideMenu();
@@ -68,17 +71,31 @@ class DropDownCourseState extends State<DropDownCourse> {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    var pro = Provider.of<CalendarModel>(context);
-    _listOfCourses = pro.listOfCourses;
-    _filteredCourses = _listOfCourses;
-    _lastValue = _listOfCourses[0];
-    hintText = _lastValue.course_titol;
+
+  void _filterItems(String query) {
+
+    isValid = false;
+    if (_entry == null) {
+      _containerGeometry = _radiusGeometry2;
+      showMenu();
+    }
+    List<User> res = [];
+    if (query.isEmpty) {
+      res = _listOfUsers;
+    } else {
+      res = _listOfUsers
+          .where((user) =>
+          user.email.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    setState(() {
+      res.sort((a, b) => a.compareTo(b));
+      _filteredUsers = res;
+    });
   }
 
-  void showMenu() {
+
+  void showMenu(){
     final overlay = Overlay.of(context)!;
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
@@ -99,7 +116,7 @@ class DropDownCourseState extends State<DropDownCourse> {
                     context: context,
                     child: Container(
                       padding:
-                          const EdgeInsets.only(right: 15, bottom: 10, top: 10),
+                      const EdgeInsets.only(right: 15, bottom: 10, top: 10),
                       child: RawScrollbar(
                         thickness: 10,
                         trackVisibility: true,
@@ -114,89 +131,90 @@ class DropDownCourseState extends State<DropDownCourse> {
                             controller: _scrollController,
                             shrinkWrap: true,
                             padding: EdgeInsets.zero,
-                            itemCount: _filteredCourses.length,
+                            itemCount: _filteredUsers.length,
                             itemBuilder: (context, index) {
                               return ListTile(
                                   title: CustomText(
-                                    text: _filteredCourses[index].course_titol,
+                                    text: _filteredUsers[index].email,
                                     color: Colors.white,
                                   ),
                                   onTap: () =>
-                                      _onItemSelected(_filteredCourses[index]));
+                                      _onItemSelected(_filteredUsers[index]));
                             }),
                       ),
                     ),
                   ),
                 ))));
     overlay.insert(_entry!);
+
   }
 
-  void hideMenu() {
+
+  void hideMenu(){
     if (!isValid) {
-      hintText = _lastValue.course_titol;
+      _hintText = _lastValue.email;
       _controller.text = "";
     }
     _entry?.remove();
     _entry = null;
   }
 
-  void _filterItems(String query) {
-    isValid = false;
-    if (_entry == null) {
-      _containerGeometry = _radiusGeometry2;
-      showMenu();
+  Future<void> _onItemSelected(User item) async {
+    List<User> tmp = await _getUsers();
+    if(tmp.isNotEmpty){
+      _listOfUsers = await _getUsers();
     }
-    List<Course> res = [];
-    if (query.isEmpty) {
-      res = _listOfCourses;
-    } else {
-      res = _listOfCourses
-          .where((course) =>
-              course.course_titol.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    }
-    setState(() {
-      res.sort((a, b) => a.compareTo(b));
-      _filteredCourses = res;
-    });
+    isValid = true;
+    _controller.text = "";
+    _lastValue = item;
+    _filteredUsers = [];
+    widget.focusNode.unfocus();
+    widget.callBackFunction(item);    //chiama la funzione passatagli come callback per ottenere le lezioni dell'utente selezionato
   }
 
-  void _onItemSelected(Course item) {
-    isValid = true;
-    setState(() {
-      _controller.text = "";
-      _lastValue = item;
-      _filteredCourses = [];
-      widget.focusNode.unfocus();
-    });
-    widget.callBackCourse(item);
+  Future<List<User>> _getUsers() async {
+    List<User> res = [];
+    final queryParameters = {'action': 'getListOfUsers'};
+    final uri = Uri.http("$init_ip",
+        '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      List<dynamic> jsonList = jsonDecode(response.body);
+      for (var riga in jsonList) {
+        User u = User.fromJson(riga);
+        res.add(u);
+      }
+    } else {
+      print(response.statusCode);
+      print("errore");
+    }
+    return res;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: _link,
       child: Container(
-        decoration: BoxDecoration(
-            color: HexColor.fromHex("#293241"),
-            borderRadius: _containerGeometry),
+        decoration: BoxDecoration(color: HexColor.fromHex("#293241"),borderRadius: _containerGeometry),
         height: widget.textFieldHeigth,
         width: widget.width,
         child: TextField(
           textAlign: TextAlign.center,
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: _hintText,
             hintStyle: TextStyle(color: Colors.white),
             border: InputBorder.none,
           ),
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-          ),
+          style: GoogleFonts.montserrat(color: Colors.white,),
           controller: _controller,
           focusNode: widget.focusNode,
           onChanged: _filterItems,
         ),
       ),
     );
+
   }
 }

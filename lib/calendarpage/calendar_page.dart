@@ -187,14 +187,18 @@ class _CalendarPageState extends State<CalendarPage>
                       children: [
                         Row(
                           children: [
-                            Flexible(
-                              flex: 4,
-                              child: CustomText(
-                                text: "Available lessons",
-                                weight: FontWeight.bold,
-                                color: HexColor.fromHex("#293241"),
-                                size: 38,
-                              ),
+                            const Flexible(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: CustomText(
+                                    text: "Available Lessons",
+                                    size: 30,
+                                    overflow: TextOverflow.clip,
+                                    weight: FontWeight.bold,
+                                    color: Color.fromRGBO(41, 50, 65, 1),
+                                  ),),),
                             ),
                             FloatingActionButton(
                               onPressed: () {
@@ -204,13 +208,44 @@ class _CalendarPageState extends State<CalendarPage>
                             )
                           ],
                         ),
-                        const Spacer(flex: 2),
+                        //const Spacer(flex: 1),
+                        Row(
+                          children: const [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: CustomText(
+                                  text: "Subject:",
+                                  size: 22,
+                                  weight: FontWeight.bold,
+                                  color: Color.fromRGBO(111, 111, 111, 1),
+                                ),),
+                            ),
+                            Spacer(
+                              flex: 1,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(0, 0, 7, 10),
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: CustomText(
+                                  text: "Teacher:",
+                                  size: 22,
+                                  weight: FontWeight.bold,
+                                  color: Color.fromRGBO(111, 111, 111, 1),
+                                ),),
+                            ),
+                          ],
+                        ),
+
                         Flexible(
                           flex: 2,
                           child: Row(
                             children: [
                               Flexible(
-                                  child: ChangeNotifierProvider(
+                                  child:
+                                  ChangeNotifierProvider(
                                       create: (context) => model,
                                       child: Consumer<CalendarModel>(
                                           builder: (context, model, child) {

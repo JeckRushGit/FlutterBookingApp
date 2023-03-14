@@ -20,9 +20,9 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Spacer(flex: 1),
+                //const Spacer(flex: 2),
                 const Padding(
-                  padding: EdgeInsets.all(30) ,
+                  padding: EdgeInsets.fromLTRB(30, 40, 30, 30),
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: CustomText(

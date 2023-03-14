@@ -30,7 +30,7 @@ class _ButtonSlidableResponseState extends State<ButtonSlidableResponse> {
       content: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CustomText(size: 22, text: "Do you want to cancel?", overflow: TextOverflow.ellipsis,), //but it actually overflows, even with the ellipsis :(
+          Flexible(child: CustomText(size: 22, text: "Do you want to cancel?", overflow: TextOverflow.clip,)), //but it actually overflows, even with the ellipsis :(
         ],
       ),
       actions: [

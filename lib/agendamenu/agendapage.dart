@@ -9,7 +9,6 @@ import '../navbar/custom_navbar.dart';
 import 'package:http/http.dart' as http;
 import '../startingday.dart';
 import 'agenda_menu.dart';
-import 'list_elem.dart';
 import 'list_elem_db.dart';
 
 
@@ -114,7 +113,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
   Stream<Map<KeyLezione, List<Lezione>>> _getLezioni() async*{
       var response = await http.post(Uri.parse("$ip/ServletGetBookingsForUser"), body: { "email": widget.user.email, "stato": state.toString()});
 
-      List<dynamic> jsonList = jsonDecode(response.body);
+        List<dynamic> jsonList = jsonDecode(response.body);
       Map<KeyLezione, List<Lezione>> map = {};
 
         for(var riga in jsonList){
@@ -139,7 +138,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
       _arrayGiorni.sort((a, b) => a.compareTo(b));  /*Per ordinare l'array di KeyLezione*/
 
 
-      print(map.isNotEmpty);
+
       yield map;
   }
 
@@ -173,12 +172,12 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
       builder: (context, snapshot) {
         if (snapshot.hasData){
           var map = snapshot.data!;
-          print(map);
+
            return SingleChildScrollView(
               child: Column(
                 children: [
                   const Padding(
-                    padding: EdgeInsets.all(30) ,
+                    padding: EdgeInsets.fromLTRB(30, 40, 30, 30),
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: CustomText(
@@ -249,7 +248,7 @@ class _AgendaPageState extends State<AgendaPage> with TickerProviderStateMixin {
               ),
             );
         }else{
-          return Placeholder();
+          return Center(child: CircularProgressIndicator(),);
         }
       },
     );

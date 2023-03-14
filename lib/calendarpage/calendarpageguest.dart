@@ -382,7 +382,7 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
                                         }),
                                       );
                                     } else {
-                                      return const Placeholder();
+                                      return Center(child: CircularProgressIndicator(),);
                                     }
                                   }),
                             ),

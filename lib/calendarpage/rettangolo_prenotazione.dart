@@ -138,7 +138,7 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
       showDialog(
           context: context,
           builder: (context) => const AlertDialog(
-            title: CustomText(text: "Wait for a minute"),
+            title: CustomText(text: "Wait for a minute  "),
           ));
     }else if (response.statusCode == 500) {
       print("errore con il server QUA");
