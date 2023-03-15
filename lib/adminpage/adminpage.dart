@@ -2,9 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../agendamenu/agendapage.dart';
-import '../agendamenu/list_elem.dart';
-import '../agendamenu/list_elem_db.dart';
-import '../colors/hexcolor.dart';
 import '../custom_text.dart';
 import '../modules/user.dart';
 import 'package:http/http.dart' as http;
@@ -19,7 +16,7 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-  late User _selectedUser;
+  User? _selectedUser;
   late String _userName;
   late List<User> _listOfUsers;
   late Future _myFuture;
@@ -33,21 +30,23 @@ class _AdminPageState extends State<AdminPage> {
   @override
   void initState() {
     super.initState();
+    _selectedUser = null;
     _myFuture = _getUsers();
+
   }
 
   //for the callback fuction fot the Dropdown Menu
   void _callBackSelectedUser(User utente) {
     _myFuture = _getUsers();
-    _userName = utente.name+" "+utente.surname;
-    setState(() {
-    });
+    _selectedUser = utente;
+    _userName = "${utente.name} ${utente.surname}";
+
   }
 
   Future<List<User>> _getUsers() async {
     List<User> res = [];
     final queryParameters = {'action': 'getListOfUsers'};
-    final uri = Uri.http("$init_ip",
+    final uri = Uri.http(init_ip,
         '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
     final response = await http.get(uri);
     if (response.statusCode == 200) {
@@ -57,7 +56,6 @@ class _AdminPageState extends State<AdminPage> {
         res.add(u);
       }
     } else {
-      print(response.statusCode);
       print("errore");
     }
     return res;
@@ -91,15 +89,29 @@ class _AdminPageState extends State<AdminPage> {
   //   yield map;
   // }
 
-  Future<Map<KeyLezione, List<Lezione>>> _getLezioniUtente(User _selectedUser) async{
+  Future<Map<KeyLezione, List<Lezione>>> _getLezioniUtente(User? selectedUser) async{
     Map<KeyLezione, List<Lezione>> map = {};
-    List<User> res = [];
-    final queryParameters = {'action': 'getBookingsForUser','userEmail': _selectedUser.email};
-    final uri = Uri.http("$init_ip",
-        '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
-    final response = await http.get(uri);
-    List<dynamic> jsonList = jsonDecode(response.body);
+    if(selectedUser != null){
+      final queryParameters = {'action': 'getBookingsForUser','userEmail': selectedUser.email};
+      final uri = Uri.http(init_ip,
+          '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
+      final response = await http.get(uri);
+      if(response.statusCode == 200){
 
+        List<dynamic> jsonList = jsonDecode(response.body);
+        for(var riga in jsonList){
+          KeyLezione k = KeyLezione.fromJson(riga);
+          if(!map.containsKey(k)){
+            List<Lezione> list = [Lezione.fromJson(riga)];
+            map[k] = list;
+          }else{
+            List<Lezione> list = map[k]!;
+            list.add(Lezione.fromJson(riga));
+          }
+        }
+        print(map);
+      }
+    }
     return map;
   }
 
@@ -112,7 +124,7 @@ class _AdminPageState extends State<AdminPage> {
             if(firstTime){
               _listOfUsers = snapshot.data;
               _selectedUser = _listOfUsers[0];
-              _userName = "${_selectedUser.name} ${_selectedUser.surname}";
+              _userName = "${_selectedUser!.name} ${_selectedUser!.surname}";
               firstTime = false;
             }
             return GestureDetector(
@@ -165,6 +177,7 @@ class _AdminPageState extends State<AdminPage> {
                       ],
                     ),FutureBuilder(future: _getLezioniUtente(_selectedUser),builder: (context,snapshot){
                       if(snapshot.hasData){
+                        print(snapshot.data);
                         return Container();
                       }else{
                         return Center(child: CircularProgressIndicator(),);
