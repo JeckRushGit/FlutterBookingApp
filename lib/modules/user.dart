@@ -16,6 +16,17 @@ class User {
 
   User.fake();
 
+  User.onlyEmail(String email){
+
+    this.email = email;
+    this.name = "";
+    this.surname = "";
+    this.password = "";
+    this.role = "";
+    this.birthday = "";
+    this.profession = "";
+  }
+
   User.safe(String email,String name,String surname){
     this.email = email;
     this.name = name;

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../agendamenu/agendapage.dart';
+import '../agendamenu/list_elem.dart';
+import '../agendamenu/list_elem_db.dart';
 import '../custom_text.dart';
 import '../modules/user.dart';
 import 'package:http/http.dart' as http;
@@ -16,103 +18,81 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-  User? _selectedUser;
-  late String _userName;
-  late List<User> _listOfUsers;
   late Future _myFuture;
-  late Future _myFuture2;
-  late List<KeyLezione> _arrayGiorni = [];
+  late User gUser;
   bool firstTime = true;
-
   final _focusNode = FocusNode();
-
 
   @override
   void initState() {
-    super.initState();
-    _selectedUser = null;
-    _myFuture = _getUsers();
-
+    _myFuture = _getUsers(null);
   }
 
-  //for the callback fuction fot the Dropdown Menu
-  void _callBackSelectedUser(User utente) {
-    _myFuture = _getUsers();
-    _selectedUser = utente;
-    _userName = "${utente.name} ${utente.surname}";
+  void _callBack(User user) {
+    gUser = user;
+    _myFuture = _getUsers(user);
+    setState(() {
 
+    });
   }
 
-  Future<List<User>> _getUsers() async {
+  Future<List<dynamic>> _getUsers(User? user) async {
+    List<dynamic> resultToReturn = [];
+    Map<User, Map<KeyLezione, List<Lezione>>> map = {};
+    Map<KeyLezione, List<Lezione>> userBookings;
+    Map<KeyLezione, List<Lezione>> userBookingsForSelectedUser;
     List<User> res = [];
-    final queryParameters = {'action': 'getListOfUsers'};
-    final uri = Uri.http(init_ip,
+    var queryParameters = {'action': 'getListOfUsers'};
+    var uri = Uri.http("192.168.1.110:8082",
         '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
-    final response = await http.get(uri);
+    var response = await http.get(uri);
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);
       for (var riga in jsonList) {
         User u = User.fromJson(riga);
         res.add(u);
       }
-    } else {
-      print("errore");
     }
-    return res;
+    if (user == null && response.statusCode == 200) {
+      User firstUser = res[0];
+      userBookings = await _getUserBookings(firstUser);
+      map[firstUser] = userBookings;
+      resultToReturn.add(res);
+      resultToReturn.add(map);
+    } else if(user != null && response.statusCode == 200 ) {
+      userBookingsForSelectedUser = await _getUserBookings(user);
+      map[user] = userBookingsForSelectedUser;
+      resultToReturn.add(res);
+      resultToReturn.add(map);
+    }
+    return resultToReturn;
   }
 
-  // Stream<Map<KeyLezione, List<Lezione>>> _getLezioniUtente(User _selectedUser) async* {
-  //   var response = await http.post(Uri.parse("$ip/Servlet"), body: {});
-  //   //Da fare: use _selectedUser to put the values we need to send to the Servlet
-  //   List<dynamic> jsonList = jsonDecode(response.body);
-  //   Map<KeyLezione, List<Lezione>> map = {};
-  //
-  //   for (var riga in jsonList) {
-  //     KeyLezione k = KeyLezione.fromJson(riga);
-  //
-  //     if (!(map.containsKey(k))) {
-  //       _arrayGiorni.add(k);
-  //
-  //       List<Lezione> list = [Lezione.fromJson(riga)];
-  //
-  //       map[k] = list;
-  //     } else {
-  //       List<Lezione> list = map[k]!;
-  //
-  //       list.add(Lezione.fromJson(riga));
-  //     }
-  //   }
-  //
-  //   _arrayGiorni
-  //       .sort((a, b) => a.compareTo(b)); /*Per ordinare l'array di KeyLezione*/
-  //
-  //   yield map;
-  // }
-
-  Future<Map<KeyLezione, List<Lezione>>> _getLezioniUtente(User? selectedUser) async{
-    Map<KeyLezione, List<Lezione>> map = {};
-    if(selectedUser != null){
-      final queryParameters = {'action': 'getBookingsForUser','userEmail': selectedUser.email};
-      final uri = Uri.http(init_ip,
-          '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
-      final response = await http.get(uri);
-      if(response.statusCode == 200){
-
-        List<dynamic> jsonList = jsonDecode(response.body);
-        for(var riga in jsonList){
-          KeyLezione k = KeyLezione.fromJson(riga);
-          if(!map.containsKey(k)){
-            List<Lezione> list = [Lezione.fromJson(riga)];
-            map[k] = list;
-          }else{
-            List<Lezione> list = map[k]!;
-            list.add(Lezione.fromJson(riga));
-          }
+  Future<Map<KeyLezione, List<Lezione>>> _getUserBookings(
+      User selectedUser) async {
+    Map<KeyLezione, List<Lezione>> userBookings = {};
+    var queryParameters = {
+      'action': 'getBookingsForUser',
+      'userEmail': selectedUser.email
+    };
+    var uri = Uri.http("192.168.1.110:8082",
+        '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      List<dynamic> jsonList = jsonDecode(response.body);
+      for (var riga in jsonList) {
+        KeyLezione k = KeyLezione.fromJson(riga);
+        if (!(userBookings.containsKey(k))) {
+          List<Lezione> list = [Lezione.fromJson(riga)];
+          userBookings[k] = list;
+        } else {
+          List<Lezione> list = userBookings[k]!;
+          list.add(Lezione.fromJson(riga));
         }
-        print(map);
       }
     }
-    return map;
+
+    return userBookings;
   }
 
   @override
@@ -121,19 +101,27 @@ class _AdminPageState extends State<AdminPage> {
         future: _myFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+
+            List<dynamic> listResult = snapshot.data;
+            List<User> users = listResult[0];
+            Map<User, Map<KeyLezione, List<Lezione>>> res = listResult[1];
+            Iterable<User> l = res.keys;
+            User selectedUser = l.elementAt(0);
             if(firstTime){
-              _listOfUsers = snapshot.data;
-              _selectedUser = _listOfUsers[0];
-              _userName = "${_selectedUser!.name} ${_selectedUser!.surname}";
+              gUser = selectedUser;
               firstTime = false;
             }
+            List<KeyLezione> arrayGiorni = res[selectedUser]!.keys.toList();
             return GestureDetector(
               onTap: () {
                 _focusNode.unfocus();
               },
               child: RefreshIndicator(
                 onRefresh: () async {
+                  _myFuture = _getUsers(gUser);
+                  setState(() {
 
+                  });
                 },
                 child: ListView(
                   children: [
@@ -152,13 +140,17 @@ class _AdminPageState extends State<AdminPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(width: 20,),
+                        SizedBox(
+                          width: 20,
+                        ),
                         Expanded(
                           flex: 5,
                           child: Align(
                             alignment: Alignment.topLeft,
                             child: CustomText(
-                              text: _userName,
+                              text: selectedUser.name +
+                                  " " +
+                                  selectedUser.surname,
                               size: 25,
                               weight: FontWeight.w500,
                               color: Color.fromRGBO(111, 111, 111, 1),
@@ -167,23 +159,25 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                         Spacer(flex: 1),
                         DropDownUsers(
-                          callBackFunction: _callBackSelectedUser,
-                            listOfUsers: _listOfUsers,
+                            callBackFunction: _callBack,
+                            listOfUsers: users,
                             focusNode: _focusNode,
                             textFieldHeigth: 50,
-                            width:
-                                MediaQuery.of(context).size.width * 0.40),
-                        SizedBox(width: 20,)
+                            width: MediaQuery.of(context).size.width * 0.40),
+                        SizedBox(
+                          width: 20,
+                        )
                       ],
-                    ),FutureBuilder(future: _getLezioniUtente(_selectedUser),builder: (context,snapshot){
-                      if(snapshot.hasData){
-                        print(snapshot.data);
-                        return Container();
-                      }else{
-                        return Center(child: CircularProgressIndicator(),);
-                      }
-                    },)
-
+                    ),
+                    Column(children: [
+                      for (int i = 0; i < arrayGiorni.length; i++)
+                        //if(_arrayGiorniLezioniNextW.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                          //child: ListElem(),
+                          child: ListElemDb(map: res[selectedUser]!, date: arrayGiorni[i] ,user: selectedUser ,slidable_enabled: true,),
+                        ),
+                    ],)
                     // for (int i = 0; i < 5 /*_arrayGiorni.length*/; i++)
                     //   //if(_arrayGiorniLezioniNextW.isNotEmpty)
                     //   Padding(
