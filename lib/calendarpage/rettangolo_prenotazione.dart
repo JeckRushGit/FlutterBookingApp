@@ -13,6 +13,7 @@ import '../startingday.dart';
 class RettangoloPrenotazione extends StatefulWidget {
   final String hour;
   final int day;
+  final int month;
   final double width;
   final double heigth;
   bool prenotata;
@@ -28,6 +29,7 @@ class RettangoloPrenotazione extends StatefulWidget {
       {super.key,
       required this.hour,
       required this.day,
+      required this.month,
       required this.prenotata,
       required this.width,
       required this.heigth,
@@ -64,7 +66,7 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
     if (!widget.prenotata) {
       try {
         bool val = await _bookTeaching(widget.course, widget.professor,
-            widget.user, widget.day, 1, widget.hour);
+            widget.user, widget.day, widget.month, widget.hour);
         if (val) {
           showDialog(
               context: context,
@@ -92,32 +94,48 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
   }
 
   void _popUpConf() {
-    if(!widget.prenotata){
+    if (!widget.prenotata) {
       List<String> splittedString = widget.hour.split("-");
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            actionsAlignment: MainAxisAlignment.spaceAround,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(24))),
-            content: CustomText(
-                size: 22,
-                text: "Sei sicuro di voler prenotare la lezione di ${widget.course.course_titol} tenuta da ${widget.professor.toStringDropDown()} il ${widget.day}/1 dalle ${splittedString[0]} alle ${splittedString[1]} ?"),
-            actions: [
-              IconButton(icon : const Icon(Iconsax.close_circle,size: 40,),color: Colors.red,onPressed: (){Navigator.pop(context);},),
-              IconButton(icon : const Icon(Iconsax.tick_circle,size: 40,),color: Colors.green,onPressed: (){
-                Navigator.pop(context);
-                _changeState();}),
-            ],
-          ));
+                actionsAlignment: MainAxisAlignment.spaceAround,
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24))),
+                content: CustomText(
+                    size: 22,
+                    text:
+                        "Sei sicuro di voler prenotare la lezione di ${widget.course.course_titol} tenuta da ${widget.professor.toStringDropDown()} il ${widget.day}/${widget.month} dalle ${splittedString[0]} alle ${splittedString[1]} ?"),
+                actions: [
+                  IconButton(
+                    icon: const Icon(
+                      Iconsax.close_circle,
+                      size: 40,
+                    ),
+                    color: Colors.red,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  IconButton(
+                      icon: const Icon(
+                        Iconsax.tick_circle,
+                        size: 40,
+                      ),
+                      color: Colors.green,
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _changeState();
+                      }),
+                ],
+              ));
     }
   }
 
   Future<bool> _bookTeaching(Course course, Professor professor, User user,
       int day, int month, String hour) async {
     var response = await http.post(
-      Uri.parse(
-          "$ip/ServletBookTeaching"),
+      Uri.parse("$ip/ServletBookTeaching"),
       body: jsonEncode(<String, String>{
         'course_titol': course.course_titol,
         'professor_email': professor.email,
@@ -134,13 +152,13 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
       return true;
     } else if (response.statusCode == 400) {
       throw "lezione non disponibile";
-    } else if(response.statusCode == 406){
+    } else if (response.statusCode == 406) {
       showDialog(
           context: context,
           builder: (context) => const AlertDialog(
-            title: CustomText(text: "Wait for a minute  "),
-          ));
-    }else if (response.statusCode == 500) {
+                title: CustomText(text: "Wait for a minute  "),
+              ));
+    } else if (response.statusCode == 500) {
       print("errore con il server QUA");
     }
     return false;
@@ -151,7 +169,7 @@ class _RettangoloPrenotazioneState extends State<RettangoloPrenotazione> {
     return InkWell(
       highlightColor: Colors.transparent,
       splashFactory: NoSplash.splashFactory,
-      onTap: (){
+      onTap: () {
         _popUpConf();
       },
       child: Container(

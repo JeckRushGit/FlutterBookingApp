@@ -32,13 +32,15 @@ class _CalendarPageState extends State<CalendarPage>
   final _focusNode2 = FocusNode();
   late CalendarModel model;
   late Other model2;
-  late SelectedCourse sCourse ;
+  late SelectedCourse sCourse;
+
   late SelectedProfessor sProfessor;
   late AvBookingsModel modelBooking;
   late Stream myStream;
   late Stream bookingStream;
+  int? firstDay = null;
+  int? month = null;
   bool needToRebuild = true;
-
 
   @override
   void initState() {
@@ -63,8 +65,9 @@ class _CalendarPageState extends State<CalendarPage>
 
   void changeProfessor(Professor professor) {
     sProfessor.updateSelectedProfessor(professor);
-    setState((){
-      bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse,sProfessor.selectedProfessor,widget.user);
+    setState(() {
+      bookingStream = _getBookingsForCourseAndProfessor(
+          sCourse.selectedCourse, sProfessor.selectedProfessor, widget.user);
     });
   }
 
@@ -72,8 +75,7 @@ class _CalendarPageState extends State<CalendarPage>
     Map<Course, Set<Professor>> map = {};
     List<Teaching> list = [];
     var response = await http
-        .get(Uri.parse(
-            "$ip/ServletGetTeachings"))
+        .get(Uri.parse("$ip/ServletGetTeachings"))
         .timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);
@@ -94,7 +96,7 @@ class _CalendarPageState extends State<CalendarPage>
     yield map;
   }
 
-  void _reloadPage(){
+  void _reloadPage() {
     needToRebuild = true;
     setState(() {
       myStream = _getTeachings();
@@ -102,22 +104,36 @@ class _CalendarPageState extends State<CalendarPage>
   }
 
   Stream<Map<int, List<bool>>> _getBookingsForCourseAndProfessor(
-      Course course, Professor professor,User user) async* {
-
-    try{
+      Course course, Professor professor, User user) async* {
+    try {
       Map<int, List<bool>> map = {};
-      var response = await http.post(
-          Uri.parse(
-              "$ip/ServletGetAvBookings"),
-          body: {
-            'titoloCorso': course.course_titol,
-            'emailProfessore': professor.email,
-            'emailUtente': user.email
-          }).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200) {
+
+      var queryParameters1 = {'action': 'web-getdaysandmonth'};
+      var uri1 = Uri.http(init_ip, '/demo1_war_exploded/ServletGetAvBookings',
+          queryParameters1);
+      var response1 = await http.get(uri1);
+
+      int firstDayOfWeek = 0;
+      if (response1.statusCode == 200) {
+        Map<String, dynamic> jsonA = jsonDecode(response1.body);
+        firstDayOfWeek = jsonA['days'][0];
+        this.firstDay = jsonA['days'][0];
+        this.month = jsonA['month'];
+      }
+
+      var queryParameters2 = {
+        'action': 'mobile',
+        'titoloCorso': course.course_titol,
+        'emailProfessore': professor.email,
+        'emailUtente': user.email
+      };
+      var uri2 = Uri.http(init_ip, '/demo1_war_exploded/ServletGetAvBookings',
+          queryParameters2);
+      var response2 = await http.get(uri2);
+
+      if (response2.statusCode == 200) {
         /*PERICOLOSO !!!! CAMBIARE IL PRIMA POSSIBILE*/
-        int firstDayOfWeek = startingDayOfWeek;
-        for(int i = 0; i < 5 ; i++){
+        for (int i = 0; i < 5; i++) {
           List<bool> list = List<bool>.filled(4, false, growable: false);
           map[firstDayOfWeek] = list;
           firstDayOfWeek++;
@@ -125,7 +141,8 @@ class _CalendarPageState extends State<CalendarPage>
 
         /*************************************/
 
-        List<dynamic> jsonMap = jsonDecode(response.body);
+        List<dynamic> jsonMap = jsonDecode(response2.body);
+
 
         for (var c in jsonMap) {
           if (!map.containsKey(c["day"])) {
@@ -150,12 +167,9 @@ class _CalendarPageState extends State<CalendarPage>
       }
 
       yield map;
-    }catch(e){
+    } catch (e) {
       print(e);
     }
-
-
-
   }
 
   @override
@@ -165,12 +179,15 @@ class _CalendarPageState extends State<CalendarPage>
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var map = snapshot.data!;
-            if(needToRebuild){
+            if (needToRebuild) {
               model.updateMap(map);
               model2.updateListOfProfessor(model.listOfProfessor);
               sCourse.updateSelectedCourse(model.listOfCourses[0]);
               sProfessor.updateSelectedProfessor(model.listOfProfessor[0]);
-              bookingStream = _getBookingsForCourseAndProfessor(sCourse.selectedCourse, sProfessor.selectedProfessor,widget.user);
+              bookingStream = _getBookingsForCourseAndProfessor(
+                  sCourse.selectedCourse,
+                  sProfessor.selectedProfessor,
+                  widget.user);
               needToRebuild = false;
             }
             return GestureDetector(
@@ -198,7 +215,9 @@ class _CalendarPageState extends State<CalendarPage>
                                     overflow: TextOverflow.clip,
                                     weight: FontWeight.bold,
                                     color: Color.fromRGBO(41, 50, 65, 1),
-                                  ),),),
+                                  ),
+                                ),
+                              ),
                             ),
                             FloatingActionButton(
                               onPressed: () {
@@ -220,7 +239,8 @@ class _CalendarPageState extends State<CalendarPage>
                                   size: 22,
                                   weight: FontWeight.bold,
                                   color: Color.fromRGBO(111, 111, 111, 1),
-                                ),),
+                                ),
+                              ),
                             ),
                             Spacer(
                               flex: 1,
@@ -234,7 +254,8 @@ class _CalendarPageState extends State<CalendarPage>
                                   size: 22,
                                   weight: FontWeight.bold,
                                   color: Color.fromRGBO(111, 111, 111, 1),
-                                ),),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -244,8 +265,7 @@ class _CalendarPageState extends State<CalendarPage>
                           child: Row(
                             children: [
                               Flexible(
-                                  child:
-                                  ChangeNotifierProvider(
+                                  child: ChangeNotifierProvider(
                                       create: (context) => model,
                                       child: Consumer<CalendarModel>(
                                           builder: (context, model, child) {
@@ -283,7 +303,8 @@ class _CalendarPageState extends State<CalendarPage>
                         const Spacer(
                           flex: 1,
                         ),
-                        Calendario(tabController: _tabController,user : widget.user),
+                        Calendario(
+                            tabController: _tabController, user: widget.user),
                         Flexible(
                           flex: 20,
                           child: Container(
@@ -309,27 +330,47 @@ class _CalendarPageState extends State<CalendarPage>
                                     modelBooking.updateMap(map);
                                     return MultiProvider(
                                       providers: [
-                                        ChangeNotifierProvider(create: (context) => modelBooking),
-                                        ChangeNotifierProvider(create: (context) => sCourse),
-                                        ChangeNotifierProvider(create: (context) => sProfessor)
+                                        ChangeNotifierProvider(
+                                            create: (context) => modelBooking),
+                                        ChangeNotifierProvider(
+                                            create: (context) => sCourse),
+                                        ChangeNotifierProvider(
+                                            create: (context) => sProfessor)
                                       ],
-                                      child: Consumer3<AvBookingsModel,SelectedCourse,SelectedProfessor>(
-                                        builder: (context, model,course,professor,child) {
+                                      child: Consumer3<
+                                              AvBookingsModel,
+                                              SelectedCourse,
+                                              SelectedProfessor>(
+                                          builder: (context, model, course,
+                                              professor, child) {
+                                        if (firstDay != null) {
+                                          int day = firstDay!;
+                                          var children = <Widget>[];
+                                          for (var i = 0; i < 5; i++) {
+                                            children.add(Prenotazioni(
+                                                month: this.month!,
+                                                day: day,
+                                                user: widget.user,
+                                                course: course,
+                                                professor: professor,
+                                                model: model,
+                                                callBackReload: _reloadPage));
+                                            day++;
+                                          }
+
                                           return TabBarView(
                                             controller: _tabController,
-                                            children: [
-                                              Prenotazioni(day: 16,user: widget.user,course: course,professor: professor,model: model,callBackReload: _reloadPage),
-                                              Prenotazioni(day: 17,user: widget.user,course: course,professor: professor,model: model,callBackReload: _reloadPage),
-                                              Prenotazioni(day: 18,user: widget.user,course: course,professor: professor,model: model,callBackReload: _reloadPage),
-                                              Prenotazioni(day: 19,user: widget.user,course: course,professor: professor,model: model,callBackReload: _reloadPage),
-                                              Prenotazioni(day: 20,user: widget.user,course: course,professor: professor,model: model,callBackReload: _reloadPage),
-                                            ],
+                                            children: children,
                                           );
+                                        } else {
+                                          return CircularProgressIndicator();
                                         }
-                                      ),
+                                      }),
                                     );
                                   } else {
-                                    return Center(child: CircularProgressIndicator(),);
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
                                   }
                                 }),
                           ),
@@ -351,12 +392,23 @@ class _CalendarPageState extends State<CalendarPage>
 
 class Prenotazioni extends StatelessWidget {
   final int day;
+  final int month;
   final User user;
   late SelectedCourse course;
   late SelectedProfessor professor;
   AvBookingsModel model;
   final Function callBackReload;
-  Prenotazioni({Key? key,required this.day,required this.user,required this.professor,required this.course,required this.model,required this.callBackReload}) : super(key: key);
+
+  Prenotazioni(
+      {Key? key,
+      required this.month,
+      required this.day,
+      required this.user,
+      required this.professor,
+      required this.course,
+      required this.model,
+      required this.callBackReload})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -373,10 +425,11 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
-                    day: day,
-                    professor: professor.selectedProfessor,
-                    course: course.selectedCourse,
-                    user: user,
+                      month: month,
+                      day: day,
+                      professor: professor.selectedProfessor,
+                      course: course.selectedCourse,
+                      user: user,
                       hour: "15:00-16:00",
                       prenotata: !model.map[day]![0],
                       width: double.maxFinite,
@@ -389,6 +442,7 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
+                      month: month,
                       day: day,
                       professor: professor.selectedProfessor,
                       course: course.selectedCourse,
@@ -405,6 +459,7 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
+                      month: month,
                       day: day,
                       professor: professor.selectedProfessor,
                       course: course.selectedCourse,
@@ -422,6 +477,7 @@ class Prenotazioni extends StatelessWidget {
                 fit: FlexFit.loose,
                 flex: 40,
                 child: RettangoloPrenotazione(
+                  month: month,
                   day: day,
                   professor: professor.selectedProfessor,
                   course: course.selectedCourse,
@@ -453,76 +509,96 @@ class Calendario extends StatefulWidget {
   final TabController tabController;
   final User user;
 
-  const Calendario({Key? key, required this.tabController,required this.user}) : super(key: key);
+
+  const Calendario({Key? key, required this.tabController, required this.user})
+      : super(key: key);
 
   @override
   State<Calendario> createState() => _CalendarioState();
 }
 
+
+
+
 class _CalendarioState extends State<Calendario> {
+
+
+  late Future<int?> myFuture;
+
+  Future<int?> getStartingDay() async{
+
+    var queryParam = {'action' : 'web-getdaysandmonth'};
+    var uri1 = Uri.http(init_ip, '/demo1_war_exploded/ServletGetAvBookings',
+        queryParam);
+
+    var response = await http.get(uri1);
+
+    if(response.statusCode == 200){
+      Map<String,dynamic> json = jsonDecode(response.body);
+      return json['days'][0];
+    }
+    else{
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    myFuture = getStartingDay();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      fit: FlexFit.loose,
-      flex: 4,
-      child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-            color: HexColor.fromHex("#293241"),
-          ),
-          child: TabBar(
-            indicator: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24)),
-                color: HexColor.fromHex("#4E5F7D")),
-            labelColor: Colors.white,
-            tabs: [
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "M")),
-                  Expanded(child: CustomText(text: "16"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "T")),
-                  Expanded(child: CustomText(text: "17"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "W")),
-                  Expanded(child: CustomText(text: "18"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "T")),
-                  Expanded(child: CustomText(text: "19"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "F")),
-                  Expanded(child: CustomText(text: "20"))
-                ],
-              )),
-            ],
-            controller: widget.tabController,
-          )),
+    return FutureBuilder<int?>(
+      future: myFuture,
+      builder: (context, snapshot) {
+        if(snapshot.hasData){
+          int day = snapshot.data!;
+
+          var days = ['M','T','W','T','F'];
+
+          var tabs = <Widget>[];
+
+          for(int i = 0; i < 5 ; i++){
+            tabs.add(Tab(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(child: CustomText(text: days[i])),
+                    Expanded(child: CustomText(text: day.toString()))
+                  ],
+                )),);
+            day++;
+          }
+
+          return Flexible(
+            fit: FlexFit.loose,
+            flex: 4,
+            child: Container(
+                constraints: const BoxConstraints(maxWidth: 500),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                  color: HexColor.fromHex("#293241"),
+                ),
+                child: TabBar(
+                  indicator: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24)),
+                      color: HexColor.fromHex("#4E5F7D")),
+                  labelColor: Colors.white,
+                  tabs: tabs,
+                  controller: widget.tabController,
+                )),
+          );
+        }else{
+          return CircularProgressIndicator();
+        }
+      }
     );
   }
 }

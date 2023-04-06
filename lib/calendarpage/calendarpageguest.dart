@@ -20,7 +20,9 @@ import 'package:progetto_ium/startingday.dart';
 int startingDayOfWeek = 16;
 
 class CalendarPageGuest extends StatefulWidget {
-  const CalendarPageGuest({Key? key}) : super(key: key);
+
+  String text;
+  CalendarPageGuest({Key? key,this.text = 'Fare login per prenotare una lezione'}) : super(key: key);
 
   @override
   State<CalendarPageGuest> createState() => _CalendarPageGuestState();
@@ -34,7 +36,8 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
   late CalendarModel model;
   late Other model2;
   late SelectedCourse sCourse;
-
+  int? firstDay = null;
+  int? month = null;
   late SelectedProfessor sProfessor;
   late AvBookingsModel modelBooking;
   late Stream myStream;
@@ -74,8 +77,7 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
     Map<Course, Set<Professor>> map = {};
     List<Teaching> list = [];
     var response = await http
-        .get(Uri.parse(
-            "$ip/ServletGetTeachings"))
+        .get(Uri.parse("$ip/ServletGetTeachings"))
         .timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);
@@ -106,16 +108,33 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
   Stream<Map<int, List<bool>>> _getBookingsForCourseAndProfessor(
       Course course, Professor professor) async* {
     Map<int, List<bool>> map = {};
-    var response = await http.post(
-        Uri.parse(
-            "$ip/ServletGetAvBookings"),
-        body: {
-          'titoloCorso': course.course_titol,
-          'emailProfessore': professor.email
-        }).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
+
+    var queryParameters1 = {'action': 'web-getdaysandmonth'};
+    var uri1 = Uri.http(
+        init_ip, '/demo1_war_exploded/ServletGetAvBookings', queryParameters1);
+    var response1 = await http.get(uri1);
+
+    int firstDayOfWeek = 0;
+
+    if (response1.statusCode == 200) {
+      Map<String, dynamic> jsonA = jsonDecode(response1.body);
+      firstDayOfWeek = jsonA['days'][0];
+      this.firstDay = jsonA['days'][0];
+      this.month = jsonA['month'];
+    }
+
+    var queryParam2 = {
+      'action': 'guest',
+      'titoloCorso': course.course_titol,
+      'emailProfessore': professor.email
+    };
+    var uri2 = Uri.http(
+        init_ip, '/demo1_war_exploded/ServletGetAvBookings', queryParam2);
+
+    var response2 = await http.get(uri2);
+
+    if (response2.statusCode == 200) {
       /*PERICOLOSO !!!! CAMBIARE IL PRIMA POSSIBILE*/
-      int firstDayOfWeek = startingDayOfWeek;
       for (int i = 0; i < 5; i++) {
         List<bool> list = List<bool>.filled(4, false, growable: false);
         map[firstDayOfWeek] = list;
@@ -124,7 +143,7 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
 
       /*************************************/
 
-      List<dynamic> jsonMap = jsonDecode(response.body);
+      List<dynamic> jsonMap = jsonDecode(response2.body);
       for (var c in jsonMap) {
         if (!map.containsKey(c["day"])) {
           List<bool> list = List<bool>.filled(4, false, growable: false);
@@ -156,13 +175,13 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
               actionsAlignment: MainAxisAlignment.spaceAround,
               shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(24))),
-              content: CustomText(text: "Fare login per prenotare una lezione"),
+              content: CustomText(text: widget.text),
               actions: [
                 MaterialButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
                   color: HexColor.fromHex("#293241"),
-                  onPressed: (){
+                  onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => MyApp()));
                   },
@@ -319,70 +338,53 @@ class _CalendarPageGuestState extends State<CalendarPageGuest>
                                                 SelectedProfessor>(
                                             builder: (context, model, course,
                                                 professor, child) {
-                                          return TabBarView(
-                                            controller: _tabController,
-                                            children: [
-                                              GestureDetector(
-                                                  onTap: _alertGuest,
-                                                  child: AbsorbPointer(
-                                                      child: Prenotazioni(
-                                                          day: 16,
-                                                          user: User.fake(),
-                                                          course: course,
-                                                          professor: professor,
-                                                          model: model,
-                                                          callBackReload:
-                                                              _reloadPage))),
-                                              GestureDetector(
-                                                  onTap: _alertGuest,
-                                                  child: AbsorbPointer(
-                                                      child: Prenotazioni(
-                                                          day: 17,
-                                                          user: User.fake(),
-                                                          course: course,
-                                                          professor: professor,
-                                                          model: model,
-                                                          callBackReload:
-                                                              _reloadPage))),
-                                              GestureDetector(
-                                                  onTap: _alertGuest,
-                                                  child: AbsorbPointer(
-                                                      child: Prenotazioni(
-                                                          day: 18,
-                                                          user: User.fake(),
-                                                          course: course,
-                                                          professor: professor,
-                                                          model: model,
-                                                          callBackReload:
-                                                              _reloadPage))),
-                                              GestureDetector(
-                                                  onTap: _alertGuest,
-                                                  child: AbsorbPointer(
-                                                      child: Prenotazioni(
-                                                          day: 19,
-                                                          user: User.fake(),
-                                                          course: course,
-                                                          professor: professor,
-                                                          model: model,
-                                                          callBackReload:
-                                                              _reloadPage))),
-                                              GestureDetector(
-                                                  onTap: _alertGuest,
-                                                  child: AbsorbPointer(
-                                                      child: Prenotazioni(
-                                                          day: 20,
-                                                          user: User.fake(),
-                                                          course: course,
-                                                          professor: professor,
-                                                          model: model,
-                                                          callBackReload:
-                                                              _reloadPage))),
-                                            ],
-                                          );
+
+
+                                              if(firstDay != null){
+                                                int day = firstDay!;
+                                                var children = <Widget>[];
+                                                for (var i = 0; i < 5; i++) {
+                                                  children.add(
+
+                                                    GestureDetector(
+                                                            onTap: _alertGuest,
+                                                            child: AbsorbPointer(
+                                                                child: Prenotazioni(
+                                                                    day: day,
+                                                                    user: User.fake(),
+                                                                    course: course,
+                                                                    professor: professor,
+                                                                    model: model,
+                                                                    callBackReload:
+                                                                        _reloadPage)))
+
+
+                                                  );
+                                                  day++;
+                                                }
+
+
+
+                                                return TabBarView(
+                                                  controller: _tabController,
+                                                  children: children,                                                );
+                                              }else{
+                                                return CircularProgressIndicator();
+                                              }
+
+
+
+
+
+
+
+
                                         }),
                                       );
                                     } else {
-                                      return Center(child: CircularProgressIndicator(),);
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
                                     }
                                   }),
                             ),
@@ -436,6 +438,7 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
+                      month: 4,
                       day: day,
                       professor: professor.selectedProfessor,
                       course: course.selectedCourse,
@@ -452,6 +455,7 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
+                      month: 4,
                       day: day,
                       professor: professor.selectedProfessor,
                       course: course.selectedCourse,
@@ -468,6 +472,7 @@ class Prenotazioni extends StatelessWidget {
               Flexible(
                   flex: 40,
                   child: RettangoloPrenotazione(
+                      month: 4,
                       day: day,
                       professor: professor.selectedProfessor,
                       course: course.selectedCourse,
@@ -485,6 +490,7 @@ class Prenotazioni extends StatelessWidget {
                 fit: FlexFit.loose,
                 flex: 40,
                 child: RettangoloPrenotazione(
+                  month: 4,
                   day: day,
                   professor: professor.selectedProfessor,
                   course: course.selectedCourse,
@@ -516,6 +522,7 @@ class Calendario extends StatefulWidget {
   final TabController tabController;
   final User user;
 
+
   const Calendario({Key? key, required this.tabController, required this.user})
       : super(key: key);
 
@@ -523,70 +530,89 @@ class Calendario extends StatefulWidget {
   State<Calendario> createState() => _CalendarioState();
 }
 
+
+
+
 class _CalendarioState extends State<Calendario> {
+
+
+  late Future<int?> myFuture;
+
+  Future<int?> getStartingDay() async{
+
+    var queryParam = {'action' : 'web-getdaysandmonth'};
+    var uri1 = Uri.http(init_ip, '/demo1_war_exploded/ServletGetAvBookings',
+        queryParam);
+
+    var response = await http.get(uri1);
+
+    if(response.statusCode == 200){
+      Map<String,dynamic> json = jsonDecode(response.body);
+      return json['days'][0];
+    }
+    else{
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    myFuture = getStartingDay();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      fit: FlexFit.loose,
-      flex: 4,
-      child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-            color: HexColor.fromHex("#293241"),
-          ),
-          child: TabBar(
-            indicator: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24)),
-                color: HexColor.fromHex("#4E5F7D")),
-            labelColor: Colors.white,
-            tabs: [
-              Tab(
+    return FutureBuilder<int?>(
+        future: myFuture,
+        builder: (context, snapshot) {
+          if(snapshot.hasData){
+            int day = snapshot.data!;
+
+            var days = ['M','T','W','T','F'];
+
+            var tabs = <Widget>[];
+
+            for(int i = 0; i < 5 ; i++){
+              tabs.add(Tab(
                   child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "M")),
-                  Expanded(child: CustomText(text: "16"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "T")),
-                  Expanded(child: CustomText(text: "17"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "W")),
-                  Expanded(child: CustomText(text: "18"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "T")),
-                  Expanded(child: CustomText(text: "19"))
-                ],
-              )),
-              Tab(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Expanded(child: CustomText(text: "F")),
-                  Expanded(child: CustomText(text: "20"))
-                ],
-              )),
-            ],
-            controller: widget.tabController,
-          )),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(child: CustomText(text: days[i])),
+                      Expanded(child: CustomText(text: day.toString()))
+                    ],
+                  )),);
+              day++;
+            }
+
+            return Flexible(
+              fit: FlexFit.loose,
+              flex: 4,
+              child: Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                    color: HexColor.fromHex("#293241"),
+                  ),
+                  child: TabBar(
+                    indicator: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24)),
+                        color: HexColor.fromHex("#4E5F7D")),
+                    labelColor: Colors.white,
+                    tabs: tabs,
+                    controller: widget.tabController,
+                  )),
+            );
+          }else{
+            return CircularProgressIndicator();
+          }
+        }
     );
   }
 }
+

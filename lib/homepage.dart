@@ -4,6 +4,7 @@ import 'package:progetto_ium/adminpage/adminpage.dart';
 import 'package:progetto_ium/agendamenu/agenda_menu.dart';
 import 'package:progetto_ium/agendamenu/agendapage.dart';
 import 'package:progetto_ium/calendarpage/calendar_page.dart';
+import 'package:progetto_ium/calendarpage/calendarpageguest.dart';
 import 'package:progetto_ium/colors/hexcolor.dart';
 import 'package:progetto_ium/modules/user.dart';
 import 'package:progetto_ium/navbar/custom_navbar.dart';
@@ -43,14 +44,14 @@ class HomePage extends StatelessWidget {
             user = snapshot.data!;
             if (user.role == 'Administrator') { //Mostra pagine per l'amministratore
               return DefaultTabController(
-                  length: 2,
+                  length: 3,
                   child: Scaffold(
                       resizeToAvoidBottomInset: false,
                       body: TabBarView(
                         physics: const NeverScrollableScrollPhysics(),
-                        children: [AdminPage(), ProfilePage(user: user)],
+                        children: [AdminPage(),CalendarPageGuest(text: 'Fare login come client per prenotare una lezion'), ProfilePage(user: user)],
                       ),
-                      bottomNavigationBar: CustomNavBarAdmin(
+                      bottomNavigationBar: CustomNavBar(
                           barColor: HexColor.fromHex("#293241"))));
             } else {
               return DefaultTabController(  //Mostra pagine per un client

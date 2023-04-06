@@ -43,7 +43,7 @@ class _AdminPageState extends State<AdminPage> {
     Map<KeyLezione, List<Lezione>> userBookingsForSelectedUser;
     List<User> res = [];
     var queryParameters = {'action': 'getListOfUsers'};
-    var uri = Uri.http("192.168.1.110:8082",
+    var uri = Uri.http(init_ip,
         '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
     var response = await http.get(uri);
     if (response.statusCode == 200) {
@@ -75,7 +75,7 @@ class _AdminPageState extends State<AdminPage> {
       'action': 'getBookingsForUser',
       'userEmail': selectedUser.email
     };
-    var uri = Uri.http("192.168.1.110:8082",
+    var uri = Uri.http(init_ip,
         '/demo1_war_exploded/ServletAdminGetBookings', queryParameters);
     var response = await http.get(uri);
     if (response.statusCode == 200) {
@@ -97,6 +97,7 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return FutureBuilder(
         future: _myFuture,
         builder: (context, snapshot) {
@@ -175,7 +176,7 @@ class _AdminPageState extends State<AdminPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                           //child: ListElem(),
-                          child: ListElemDb(map: res[selectedUser]!, date: arrayGiorni[i] ,user: selectedUser ,slidable_enabled: true,),
+                          child: ListElemDb(isAdmin: true,map: res[selectedUser]!, date: arrayGiorni[i] ,user: selectedUser ,slidable_enabled: true,),
                         ),
                     ],)
                     // for (int i = 0; i < 5 /*_arrayGiorni.length*/; i++)
@@ -194,3 +195,13 @@ class _AdminPageState extends State<AdminPage> {
         });
   }
 }
+
+
+// class AdminPage extends StatelessWidget {
+//   const AdminPage({Key? key}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Placeholder();
+//   }
+// }

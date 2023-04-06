@@ -17,10 +17,11 @@ import '../startingday.dart';
 
 class ListElemDb extends StatefulWidget {
   Map<KeyLezione, List<Lezione>> map;
+  bool isAdmin;
   KeyLezione date;
   User user;
   bool slidable_enabled;
-  ListElemDb({Key? key, required this.map, required this.date, required this.user, required this.slidable_enabled }) : super(key: key);
+  ListElemDb({Key? key,required this.isAdmin, required this.map, required this.date, required this.user, required this.slidable_enabled }) : super(key: key);
 
 @override
 State<ListElemDb> createState() => _ListElemDbState();
@@ -385,30 +386,33 @@ class _ListElemDbState extends State<ListElemDb> {
                     enabled: widget.slidable_enabled,
                     startActionPane: ActionPane(
                       motion: StretchMotion(), children: [
-                      SlidableAction(
-                        onPressed: (context) async {
-                          bool result = await dbSetUp("confirm", _arrayLezione[i]);
-                          if(result == true){
-                            //toglie dalla lista
-                            setState(() {
-                              _arrayLezione.removeAt(i);
-                            });
-                            showDialog(
-                                context: context,
-                                builder: (context) => const AlertDialog(
-                                  title: CustomText(text: "Your lesson was confirmed!"),
-                                ));
-                          }else{
-                            showDialog(
-                                context: context,
-                                builder: (context) => const AlertDialog(
-                                  title: CustomText(text: "Your lesson was NOT confirmed, try again later"),
-                                ));
-                          }
-                        },
-                        backgroundColor: Colors.green,
-                        icon: Icons.check,
-                        autoClose: true,
+                      Visibility(
+                        visible: !widget.isAdmin,
+                        child: SlidableAction(
+                          onPressed: (context) async {
+                            bool result = await dbSetUp("confirm", _arrayLezione[i]);
+                            if(result == true){
+                              //toglie dalla lista
+                              setState(() {
+                                _arrayLezione.removeAt(i);
+                              });
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => const AlertDialog(
+                                    title: CustomText(text: "Your lesson was confirmed!"),
+                                  ));
+                            }else{
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => const AlertDialog(
+                                    title: CustomText(text: "Your lesson was NOT confirmed, try again later"),
+                                  ));
+                            }
+                          },
+                          backgroundColor: Colors.green,
+                          icon: Icons.check,
+                          autoClose: true,
+                        ),
                       ),
                       SlidableAction(
                         onPressed: (context) {
