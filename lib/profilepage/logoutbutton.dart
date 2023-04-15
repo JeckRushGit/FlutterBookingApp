@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+
 import 'package:progetto_ium/main.dart';
 
+import '../calendarpage/controller/calendarcontroller.dart';
+import '../calendarpage/controller/tabcontroller.dart';
 import '../custom_text.dart';
 import '../homepage.dart';
 import '../loginpage/login_page.dart';
@@ -15,15 +19,16 @@ class LogoutButton extends StatefulWidget {
 }
 
 class _LogoutButtonState extends State<LogoutButton> {
-  final storage = const FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
+    CalendarController calendarController = Get.find();
+    MyTabController tabController = Get.find();
     return MaterialButton(
       elevation: 7.5,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16)),
-      color: Color.fromRGBO(41, 50, 65, 1),
-      padding: EdgeInsets.all(20),
+      color: const Color.fromRGBO(41, 50, 65, 1),
+      padding: const EdgeInsets.all(20),
       onPressed: () async {
         showDialog(
             context: context,
@@ -34,7 +39,7 @@ class _LogoutButtonState extends State<LogoutButton> {
               content: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CustomText(
+                  const CustomText(
                       size: 22,
                       text: "Confirm logout?"),
                 ],
@@ -42,10 +47,12 @@ class _LogoutButtonState extends State<LogoutButton> {
               actions: [
                 IconButton(icon : const Icon(Iconsax.close_circle,size: 40,),color: Colors.red,onPressed: (){Navigator.pop(context);},),
                 IconButton(icon : const Icon(Iconsax.tick_circle,size: 40,),color: Colors.green,onPressed: (){
+                  Get.deleteAll();
                   Navigator.pop(context);
-                  storage.write(key: "jwt",value: null);
+                  const FlutterSecureStorage _storage = FlutterSecureStorage();
+                  _storage.deleteAll();
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MyApp()));}),
+                      MaterialPageRoute(builder: (context) => const MyApp()));}),
               ],
             ));
 
@@ -53,17 +60,17 @@ class _LogoutButtonState extends State<LogoutButton> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(width: 15),
-          CustomText(
+          const SizedBox(width: 15),
+          const CustomText(
               text: "Log Out",
               color: Colors.white,
               weight: FontWeight.normal),
-          SizedBox(width: 20),
-          Icon(
+          const SizedBox(width: 20),
+          const Icon(
             Iconsax.logout,
             color: Colors.white,
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
         ],
       ),
     );

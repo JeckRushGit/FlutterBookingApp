@@ -1,5 +1,6 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:progetto_ium/homepage.dart';
 import 'colors/hexcolor.dart';
 import 'loginpage/login_page.dart';
@@ -34,6 +35,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    //per disattivare la rotazione dello schermo del dispositivo
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return FutureBuilder(
         future: _verifyToken(),               //prima di fare il render della homepage verifica la validità del token
         builder: (context, snapshot) {

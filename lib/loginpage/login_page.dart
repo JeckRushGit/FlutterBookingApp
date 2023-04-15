@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:progetto_ium/calendarpage/calendar_page.dart';
-import 'package:progetto_ium/calendarpage/calendarpageguest.dart';
+
 import 'package:progetto_ium/homepage.dart';
 import 'package:progetto_ium/startingday.dart';
 
+import '../calendarpage/controller/calendarcontroller.dart';
+import '../calendarpage/controller/tabcontroller.dart';
+import '../calendarpage/testpage.dart';
 import '../colors/hexcolor.dart';
 import '../custom_text.dart';
 import 'custom_form.dart';
@@ -62,14 +65,14 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               const Spacer(flex: 7),
-              CustomText(
+              const CustomText(
                 text: "BOOKIT",
                 size: 35,
                 weight: FontWeight.bold,
                 color: Colors.white,
               ),
               const Spacer(flex: 1),
-              CustomText(
+              const CustomText(
                 align: TextAlign.center,
                 text: "The esiest way to book your private lessons ",
                 color: Colors.white,
@@ -112,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                   int res =
                       await Foo(emailController.text, passwordController.text);
                   if (res == 1) {
+                    Get.deleteAll();
                     if (!mounted) return;
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => HomePage()));
@@ -155,7 +159,15 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () {
                   if (!mounted) return;
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) =>  CalendarPageGuest()));
+                      MaterialPageRoute(builder: (context) {
+                        CalendarController controller = Get.put(CalendarController(context: context));
+                        MyTabController tabcontroller = Get.put(MyTabController());
+                        return Material(
+                          child: Scaffold(
+                            body: CalendarPage(),
+                          ),
+                        );
+                      }));
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

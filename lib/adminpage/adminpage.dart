@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import '../agendamenu/agendapage.dart';
-import '../agendamenu/list_elem.dart';
+
 import '../agendamenu/list_elem_db.dart';
 import '../custom_text.dart';
 import '../modules/user.dart';
@@ -25,6 +25,7 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   void initState() {
+    super.initState();
     _myFuture = _getUsers(null);
   }
 
@@ -141,7 +142,7 @@ class _AdminPageState extends State<AdminPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         ),
                         Expanded(
@@ -149,23 +150,21 @@ class _AdminPageState extends State<AdminPage> {
                           child: Align(
                             alignment: Alignment.topLeft,
                             child: CustomText(
-                              text: selectedUser.name +
-                                  " " +
-                                  selectedUser.surname,
+                              text: "${selectedUser.name} ${selectedUser.surname}",
                               size: 25,
                               weight: FontWeight.w500,
-                              color: Color.fromRGBO(111, 111, 111, 1),
+                              color: const Color.fromRGBO(111, 111, 111, 1),
                             ),
                           ),
                         ),
-                        Spacer(flex: 1),
+                        const Spacer(flex: 1),
                         DropDownUsers(
                             callBackFunction: _callBack,
                             listOfUsers: users,
                             focusNode: _focusNode,
                             textFieldHeigth: 50,
                             width: MediaQuery.of(context).size.width * 0.40),
-                        SizedBox(
+                        const SizedBox(
                           width: 20,
                         )
                       ],
@@ -174,7 +173,7 @@ class _AdminPageState extends State<AdminPage> {
                       for (int i = 0; i < arrayGiorni.length; i++)
                         //if(_arrayGiorniLezioniNextW.isNotEmpty)
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                           //child: ListElem(),
                           child: ListElemDb(isAdmin: true,map: res[selectedUser]!, date: arrayGiorni[i] ,user: selectedUser ,slidable_enabled: true,),
                         ),
@@ -191,7 +190,7 @@ class _AdminPageState extends State<AdminPage> {
               ),
             );
           } else
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
         });
   }
 }

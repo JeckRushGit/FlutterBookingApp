@@ -1,5 +1,13 @@
-class Course{
+
+
+
+import '../calendarpage/dropdown/dropdownitem.dart';
+
+class Course implements DropDownItem{
   final String _course_titol;
+
+  @override
+  String get label =>  _course_titol;
 
   Course(this._course_titol);
 

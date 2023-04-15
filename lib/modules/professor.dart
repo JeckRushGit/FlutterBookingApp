@@ -1,7 +1,15 @@
-class Professor{
+
+
+
+import '../calendarpage/dropdown/dropdownitem.dart';
+
+class Professor implements DropDownItem{
   final String _email;
   final String _name;
   final String _surname;
+
+  @override
+  String get label =>  "$_name $_surname ($_email)";
 
   Professor(this._email, this._name, this._surname);
 

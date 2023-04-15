@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:progetto_ium/adminpage/adminpage.dart';
-import 'package:progetto_ium/agendamenu/agenda_menu.dart';
 import 'package:progetto_ium/agendamenu/agendapage.dart';
-import 'package:progetto_ium/calendarpage/calendar_page.dart';
-import 'package:progetto_ium/calendarpage/calendarpageguest.dart';
+
 import 'package:progetto_ium/colors/hexcolor.dart';
 import 'package:progetto_ium/modules/user.dart';
 import 'package:progetto_ium/navbar/custom_navbar.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:progetto_ium/navbar/custom_navbar_admin.dart';
 import 'package:progetto_ium/profilepage/profilepage.dart';
+
+import 'calendarpage/controller/calendarcontroller.dart';
+import 'calendarpage/controller/tabcontroller.dart';
+import 'calendarpage/testpage.dart';
+
 
 class HomePage extends StatelessWidget {
   late User user;
@@ -37,19 +40,22 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return  FutureBuilder<User?>(
         future: _getUserFromJWT(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             user = snapshot.data!;
+            CalendarController controller = Get.put(CalendarController(user: user,context: context));
+            MyTabController tabController = Get.put(MyTabController());
             if (user.role == 'Administrator') { //Mostra pagine per l'amministratore
               return DefaultTabController(
                   length: 3,
                   child: Scaffold(
-                      resizeToAvoidBottomInset: false,
+
                       body: TabBarView(
                         physics: const NeverScrollableScrollPhysics(),
-                        children: [AdminPage(),CalendarPageGuest(text: 'Fare login come client per prenotare una lezion'), ProfilePage(user: user)],
+                        children: [const AdminPage(),CalendarPage(user: user,), ProfilePage(user: user)],
                       ),
                       bottomNavigationBar: CustomNavBar(
                           barColor: HexColor.fromHex("#293241"))));
@@ -57,15 +63,13 @@ class HomePage extends StatelessWidget {
               return DefaultTabController(  //Mostra pagine per un client
                   length: 3,
                   child: Scaffold(
-                    resizeToAvoidBottomInset: false,
+                    // resizeToAvoidBottomInset: false,
                     body: TabBarView(
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
                           // Viste relative alle 3 pagine
                           AgendaPage(user: user),
-                          CalendarPage(
-                            user: user,
-                          ),
+                          CalendarPage(user: user),
                           ProfilePage(user: user)
                         ]),
                     bottomNavigationBar:
