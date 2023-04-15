@@ -26,6 +26,9 @@ class CalendarPage extends StatelessWidget {
     //cerco il controller che deve essere stato creato nella home
     CalendarController controller = Get.find();
 
+
+
+
     //ottengo le dimensioni del dispositivo per decidere quelle dei dropdown
     double textFieldWidth = MediaQuery.of(context).size.width * 0.4;
     double textFieldHeight = MediaQuery.of(context).size.height * 0.07;
@@ -49,7 +52,7 @@ class CalendarPage extends StatelessWidget {
           child: Container(
             width: double.maxFinite,
             height: double.maxFinite,
-            //se non metto un coloro il GestureDetector non intercetta il tap
+            //se non metto un colore il GestureDetector non intercetta il tap
             color: Colors.transparent,
             //per generare un evento di refresh della pagina allo swipe in basso
             child: RefreshIndicator(

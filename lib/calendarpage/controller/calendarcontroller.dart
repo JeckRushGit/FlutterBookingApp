@@ -15,10 +15,10 @@ import '../../modules/user.dart';
 
 class CalendarController extends GetxController {
 
-  //dati dell'utente ottenuti dopo il login(se l'utente ha loggato come guest user rimane null)
+  //dati dell'utente ottenuti dopo il login(se l'utente è loggato come guest user rimane null)
   User? user;
 
-  //struttura dati generale che contiene la lista di lezioni così come arriva dalla richiesta
+  //struttura dati generale che contiene la lista di lezioni organizzata per corsi
   var data = <String, List<dynamic>>{}.obs;
 
   //entrambe le liste verrano riempite dinamicamente in base ai valori di data
@@ -103,7 +103,11 @@ class CalendarController extends GetxController {
         }
       }
     });
-
+    /*            |
+                  |
+                  |
+                  v
+     */
     ever(selectedProfessor, (_) async {
       await fetchBookings(
           selectedCourse.value!, selectedProfessor.value!, user);
@@ -123,6 +127,8 @@ class CalendarController extends GetxController {
     selectedProfessor.value = professor;
   }
 
+
+  //metodo per aggiornare i dati manualmente
   void refreshModel() async {
     needRefresh = true;
     isLoading.value = true;
@@ -137,7 +143,7 @@ class CalendarController extends GetxController {
     var uri =
         Uri.http(init_ip, '/demo1_war_exploded/ServletGetTeachings', null);
     try {
-      var response = await http.get(uri);
+      var response = await http.get(uri).timeout(const Duration(seconds: 5));
       offline.value = false;
       if (response.statusCode == 200) {
         Map<String, List<dynamic>> data = groupByCourse(response);
@@ -358,17 +364,4 @@ class CalendarController extends GetxController {
     }
     return outerMap;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

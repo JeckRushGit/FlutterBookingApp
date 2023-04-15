@@ -46,8 +46,19 @@ class HomePage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             user = snapshot.data!;
+
+
+
+
+
             CalendarController controller = Get.put(CalendarController(user: user,context: context));
+
+
             MyTabController tabController = Get.put(MyTabController());
+
+
+
+
             if (user.role == 'Administrator') { //Mostra pagine per l'amministratore
               return DefaultTabController(
                   length: 3,
