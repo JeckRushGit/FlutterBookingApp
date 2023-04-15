@@ -14,21 +14,41 @@ import '../../modules/professor.dart';
 import '../../modules/user.dart';
 
 class CalendarController extends GetxController {
-  // User? user = User.onlyEmail('giacomodamosso@gmail.com');
-  User? user = null;
+
+  //dati dell'utente ottenuti dopo il login(se l'utente ha loggato come guest user rimane null)
+  User? user;
+
+  //struttura dati generale che contiene la lista di lezioni così come arriva dalla richiesta
   var data = <String, List<dynamic>>{}.obs;
+
+  //entrambe le liste verrano riempite dinamicamente in base ai valori di data
   var listOfCourses = <Course>[].obs;
+  //la lista di professori dipende dipende dal valore del corso selezionato che cambierà di conseguenza
   var listOfProfessors = <Professor>[].obs;
+
+  //quando la lista di corsi cambia oppure viene selezionato un corso specifico cambierà il valore
   var selectedCourse = Rxn<Course>();
+  //quando la lista di professori cambia oppure viene selezionato un professore specifico cambierà il valore
   var selectedProfessor = Rxn<Professor>();
+
+  //per indicare che stiamo facendo una richiesta e aspettiamo i risultati
   var isLoading = true.obs;
+
+  //per forzare il refresh di corso e professore selezionato
   var needRefresh = false;
+
+  //strutture per mantenere i corsi disponibili all'utente
   var mapOfBookings = <int, Map<String, dynamic>>{}.obs;
+
+  //array di giorni
   var days = <int>[].obs;
+  //mese
   int month = 0;
-  bool firstTime = true;
-  var isVisible = true.obs;
+
+  //per avvertire che non è stato possibile raggiungere il server
   var offline = false.obs;
+
+  //contesto dell'applicazione per i popup
   BuildContext context;
 
   CalendarController({this.user,required this.context});
@@ -131,6 +151,8 @@ class CalendarController extends GetxController {
     }
   }
 
+
+
   Future<void> getDaysAndMonth() async {
     var queryParam = {'action': 'web-getdaysandmonth'};
     var uri = Uri.http(
@@ -149,10 +171,12 @@ class CalendarController extends GetxController {
     }
   }
 
+
+  //per ottenere la lista di lezioni disponibili
   Future<void> fetchBookings(
       Course course, Professor professor, User? user) async {
     late Map<String, String> queryParameters;
-    if (user != null) {
+    if (user != null) { //per utente loggato
       queryParameters = {
         'action': 'mobile',
         'titoloCorso': course.course_titol,
@@ -160,7 +184,7 @@ class CalendarController extends GetxController {
         'emailUtente': user.email
       };
     } else {
-      queryParameters = {
+      queryParameters = { //per utente non loggato
         'action': 'guest',
         'titoloCorso': course.course_titol,
         'emailProfessore': professor.email,
@@ -180,31 +204,7 @@ class CalendarController extends GetxController {
       print(e);
     }
   }
-
-  Map<int, Map<String, dynamic>> groupByDayAndHour(var response) {
-    List<dynamic> json = (jsonDecode(response.body));
-    json.sort((a, b) {
-      return a['day'].toString().compareTo(b['day'].toString());
-    });
-
-    Map<int, Map<String, dynamic>> outerMap = {};
-
-    for (var row in json) {
-      int outerkey = row['day'];
-      String innerKey = row['hour'];
-      if (!outerMap.containsKey(outerkey)) {
-        Map<String, dynamic> innerMap = {};
-        innerMap[innerKey] = row;
-        outerMap[outerkey] = innerMap;
-      } else {
-        if (!outerMap[outerkey]!.containsKey(innerKey)) {
-          outerMap[outerkey]![innerKey] = row;
-        }
-      }
-    }
-    return outerMap;
-  }
-
+  //prenota una lezione,se qualcosa è andato storto mostra un pop con il messaggio
   Future<bool> bookLesson(Course course, Professor professor, User user,
       int day, int month, String hour) async {
     try {
@@ -279,7 +279,17 @@ class CalendarController extends GetxController {
   }
 
   //raggruppa le lezioni per corso in un oggetto che come chiave ha il titolo del corso e come valore
-  //la lezione
+  //la lista di professori per quel corso come nel seguente dizionario :
+  /*
+  *       {
+  *           Matematica : [Professore x ,Professore y,..],
+  *
+  *           Fisica : [Professore x]
+  *
+  *           Geografia : [Professore x,Professore z]
+  *
+  *       }
+  * */
   Map<String, List<dynamic>> groupByCourse(http.Response response) {
     List<dynamic> json = (jsonDecode(response.body));
     Map<String, List<dynamic>> map = {};
@@ -295,4 +305,70 @@ class CalendarController extends GetxController {
     }
     return map;
   }
+
+  /*
+  *     Questa funzione estrapola i dati delle prenotazioni disponibili
+  *     e le organizza nel seguente dizionario :
+  *
+  *     {
+  *       giorno x :
+  *                 {
+  *                    15:00-16:00 :   info_sulla_lezione
+  *
+  *                               ...
+  *                               ...
+  *
+  *                    18:00-19:00 : info_sulla_lezione
+  *                 }
+  *       giorno y :
+  *                 {
+  *                    15:00-16:00 :   info_sulla_lezione
+  *
+  *                               ...
+  *                               ...
+  *
+  *                    18:00-19:00 : info_sulla_lezione
+  *                 }
+  *
+  *       .....
+  *
+  *     }
+  * */
+
+  Map<int, Map<String, dynamic>> groupByDayAndHour(var response) {
+    List<dynamic> json = (jsonDecode(response.body));
+    json.sort((a, b) {
+      return a['day'].toString().compareTo(b['day'].toString());
+    });
+
+    Map<int, Map<String, dynamic>> outerMap = {};
+
+    for (var row in json) {
+      int outerkey = row['day'];
+      String innerKey = row['hour'];
+      if (!outerMap.containsKey(outerkey)) {
+        Map<String, dynamic> innerMap = {};
+        innerMap[innerKey] = row;
+        outerMap[outerkey] = innerMap;
+      } else {
+        if (!outerMap[outerkey]!.containsKey(innerKey)) {
+          outerMap[outerkey]![innerKey] = row;
+        }
+      }
+    }
+    return outerMap;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

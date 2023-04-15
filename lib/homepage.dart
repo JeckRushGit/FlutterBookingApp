@@ -12,7 +12,7 @@ import 'package:progetto_ium/profilepage/profilepage.dart';
 
 import 'calendarpage/controller/calendarcontroller.dart';
 import 'calendarpage/controller/tabcontroller.dart';
-import 'calendarpage/testpage.dart';
+import 'calendarpage/calendarpage.dart';
 
 
 class HomePage extends StatelessWidget {
